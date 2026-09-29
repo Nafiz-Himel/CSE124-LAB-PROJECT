@@ -21,4 +21,4 @@ A Data Structure-based self-service course registration system built in C.
 | History | Stack (LIFO) | Action tracking/undo |
 
 ## 📁 Detailed Documentation
-You can find the full project proposal here: [Project Proposal](docs/project-proposal.pdf)
+You can find the full project proposal here: [Project Proposal](student-course-registration-system\docs\project-proposal.pdf)
