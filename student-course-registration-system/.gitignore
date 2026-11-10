@@ -24,3 +24,7 @@ Thumbs.db
 
 # Output / Log files
 *.log
+
+# Build / Output directories
+output/
+build/
