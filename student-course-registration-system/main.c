@@ -16,6 +16,14 @@ void deleteStudent();   // Function prototype for deleting a student by admin (a
 void saveStudents();    // Function prototype for saving student records (asif-249)
 void loadStudents();    // Function prototype for loading student records (asif-249)
 void freeStudents();    // Function prototype for freeing student memory (asif-249)
+void addAdvisor();      // Function prototype for adding an advisor by admin (asif-249)
+void viewAllAdvisors(); // Function prototype for viewing all advisors by admin (asif-249)
+void searchAdvisor();   // Function prototype for searching an advisor by admin (asif-249)
+void updateAdvisor();   // Function prototype for updating advisor information by admin (asif-249)
+void deleteAdvisor();   // Function prototype for deleting an advisor by admin (asif-249)
+void saveAdvisors(); // Function prototype for saving advisor records (asif-249)
+void loadAdvisors(); // Function prototype for loading advisor records (asif-249)
+void freeAdvisors();    // Function prototype for freeing advisor memory (asif-249)
 
 typedef struct Student // Structure to represent a student (asif-249)
 {
@@ -31,6 +39,8 @@ typedef struct Student // Structure to represent a student (asif-249)
     struct Student *nxt;
 } Student;
 
+void displayStudentDetails(Student *student); // Function prototype for displaying student details (asif-249)
+
 typedef struct StudentFileRecord
 {
     char studentID[21];
@@ -44,13 +54,36 @@ typedef struct StudentFileRecord
     char password[101];
 } StudentFileRecord;
 
-void displayStudentDetails(Student *student); // Function prototype for displaying student details (asif-249)
+typedef struct Advisor
+{
+    char advisorID[51];
+    char name[101];
+    char department[21];
+    char email[101];
+    char phone[21];
+    char password[101];
+    struct Advisor *nxt;
+} Advisor;
+
+void displayAdvisorDetails(Advisor *advisor); // Function prototype for displaying advisor details (asif-249)
+
+typedef struct AdvisorFileRecord
+{
+    char advisorID[51];
+    char name[101];
+    char department[21];
+    char email[101];
+    char phone[21];
+    char password[101];
+} AdvisorFileRecord;
 
 Student *head = NULL;
+Advisor *advisorHead = NULL;
 
 int main()
 {
     loadStudents();
+    loadAdvisors();
     int choice;
 
     while (1)
@@ -80,6 +113,7 @@ int main()
             break;
         case 0:
             freeStudents();
+            freeAdvisors();
             printf("\nThank you for using DIU Course Registration System!\n");
             return 0;
 
@@ -162,23 +196,27 @@ void adminPanel()
         printf("5. Delete Student\n");
 
         printf("\n---------- ADVISOR MANAGEMENT ----------\n");
-        printf("6. Manage Advisors\n");
+        printf("6. Add Advisor\n");
+        printf("7. View All Advisors\n");
+        printf("8. Search Advisor\n");
+        printf("9. Update Advisor\n");
+        printf("10. Delete Advisor\n");
 
         printf("\n---------- DEPARTMENT & BATCH ----------\n");
-        printf("7. Manage Departments\n");
-        printf("8. Manage Batches\n");
+        printf("11. Manage Departments\n");
+        printf("12. Manage Batches\n");
 
         printf("\n---------- SECTION MANAGEMENT ----------\n");
-        printf("9. Manage Sections\n");
+        printf("13. Manage Sections\n");
 
         printf("\n---------- COURSE MANAGEMENT ----------\n");
-        printf("10. Manage Courses\n");
+        printf("14. Manage Courses\n");
 
         printf("\n---------- REGISTRATION MANAGEMENT ----------\n");
-        printf("11. Manage Registration\n");
+        printf("15. Manage Registration\n");
 
         printf("\n---------- REPORTS ----------\n");
-        printf("12. View Reports\n");
+        printf("16. View Reports\n");
 
         printf("\n0. Logout\n");
 
@@ -208,30 +246,46 @@ void adminPanel()
             break;
 
         case 6:
-            printf("\nAdvisor Management feature is coming soon!\n");
+            addAdvisor();
             break;
 
         case 7:
-            printf("\nDepartment Management feature is coming soon!\n");
+            viewAllAdvisors();
             break;
 
         case 8:
-            printf("\nBatch Management feature is coming soon!\n");
+            searchAdvisor();
             break;
 
         case 9:
-            printf("\nSection Management feature is coming soon!\n");
+            updateAdvisor();
             break;
 
         case 10:
-            printf("\nCourse Management feature is coming soon!\n");
+            deleteAdvisor();
             break;
 
         case 11:
-            printf("\nRegistration Management feature is coming soon!\n");
+            printf("\nDepartment Management feature is coming soon!\n");
             break;
 
         case 12:
+            printf("\nBatch Management feature is coming soon!\n");
+            break;
+
+        case 13:
+            printf("\nSection Management feature is coming soon!\n");
+            break;
+
+        case 14:
+            printf("\nCourse Management feature is coming soon!\n");
+            break;
+
+        case 15:
+            printf("\nRegistration Management feature is coming soon!\n");
+            break;
+
+        case 16:
             printf("\nReports feature is coming soon!\n");
             break;
 
@@ -661,4 +715,385 @@ void freeStudents()
     }
 
     printf("\n[SUCCESS] Student memory released successfully!\n");
+}
+
+// Function to add a new advisor to the system by admin (asif-249)
+void addAdvisor()
+{
+    printf("\n--- Add New Advisor ---\n\n");
+
+    char newAdvisorID[51];
+
+    printf("Enter Advisor ID: ");
+    scanf("%50s", newAdvisorID);
+
+    Advisor *temp = advisorHead;
+    while (temp != NULL)
+    {
+        if (!strcmp(temp->advisorID, newAdvisorID))
+        {
+            printf("\n[ERROR] This Advisor ID already exists!\n");
+            return;
+        }
+        temp = temp->nxt;
+    }
+
+    Advisor *newAdvisor = malloc(sizeof(Advisor));
+
+    if (newAdvisor == NULL)
+    {
+        printf("\n[ERROR] Memory allocation failed!\n");
+        return;
+    }
+
+    strcpy(newAdvisor->advisorID, newAdvisorID);
+
+    printf("Enter Advisor Name: ");
+    scanf(" %100[^\n]", newAdvisor->name);
+    printf("Enter Department: ");
+    scanf("%20s", newAdvisor->department);
+    printf("Enter Email: ");
+    scanf("%100s", newAdvisor->email);
+    printf("Enter Phone: ");
+    scanf("%20s", newAdvisor->phone);
+    printf("Enter Password: ");
+    scanf("%100s", newAdvisor->password);
+
+    newAdvisor->nxt = NULL;
+
+    if (advisorHead == NULL)
+    {
+        advisorHead = newAdvisor;
+    }
+    else
+    {
+        temp = advisorHead;
+        while (temp->nxt != NULL)
+        {
+            temp = temp->nxt;
+        }
+        temp->nxt = newAdvisor;
+    }
+
+    printf("\n[SUCCESS] Advisor added successfully!\n");
+    saveAdvisors();
+}
+
+// Function to display advisor details (asif-249)
+void displayAdvisorDetails(Advisor *advisor)
+{
+    printf("Advisor ID: %s\n", advisor->advisorID);
+    printf("Name: %s\n", advisor->name);
+    printf("Department: %s\n", advisor->department);
+    printf("Email: %s\n", advisor->email);
+    printf("Phone: %s\n", advisor->phone);
+
+    printf("=====================================\n");
+}
+
+// Function to view all advisors in the system by admin (asif-249)
+void viewAllAdvisors()
+{
+    printf("\n--- View All Advisors ---\n");
+
+    if (advisorHead == NULL)
+    {
+        printf("\nNo advisors found in the system.\n");
+        return;
+    }
+
+    int count = 0;
+    Advisor *temp = advisorHead;
+
+    while (temp != NULL)
+    {
+        printf("\n--- Advisor %d ---\n", count + 1);
+        displayAdvisorDetails(temp);
+        temp = temp->nxt;
+        count++;
+    }
+    printf("\nTotal advisors in the system: %d\n", count);
+}
+
+// Function to search for an advisor in the system by admin (asif-249)
+void searchAdvisor()
+{
+    printf("\n--- Search Advisor ---\n");
+
+    if (advisorHead == NULL)
+    {
+        printf("\nNo advisors available to search!\n");
+        return;
+    }
+
+    char searchID[51];
+    printf("Enter Advisor ID: ");
+    scanf("%50s", searchID);
+
+    Advisor *temp = advisorHead;
+    while (temp != NULL)
+    {
+        if (!strcmp(temp->advisorID, searchID))
+        {
+            printf("\n[SUCCESS] Advisor found!\n");
+            printf("\n========== Advisor Details ==========\n");
+            displayAdvisorDetails(temp);
+            return;
+        }
+        temp = temp->nxt;
+    }
+    printf("\n[ERROR] No advisor found with ID: %s\n", searchID);
+}
+
+// Function to update advisor information by admin (asif-249)
+void updateAdvisor()
+{
+    printf("\n--- Update Advisor ---\n");
+
+    if (advisorHead == NULL)
+    {
+        printf("\nNo advisors available to update!\n");
+        return;
+    }
+
+    char searchID[51];
+    printf("Enter Advisor ID: ");
+    scanf("%50s", searchID);
+
+    Advisor *temp = advisorHead;
+    while (temp != NULL)
+    {
+        if (!strcmp(temp->advisorID, searchID))
+        {
+            break;
+        }
+        temp = temp->nxt;
+    }
+
+    if (temp == NULL)
+    {
+        printf("\n[ERROR] No advisor found with ID: %s\n", searchID);
+        return;
+    }
+
+    printf("\n[SUCCESS] Advisor found!\n");
+    printf("\n========== Current Advisor Details ==========\n");
+    displayAdvisorDetails(temp);
+
+    int choice;
+    while (1)
+    {
+        printf("\n========== Update Advisor Information ==========\n");
+        printf("1. Update Name\n");
+        printf("2. Update Department\n");
+        printf("3. Update Email\n");
+        printf("4. Update Phone\n");
+        printf("5. Update Password\n");
+        printf("0. Finish Updating\n");
+
+        printf("\nEnter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice)
+        {
+        case 1:
+            printf("Enter New Name: ");
+            scanf(" %100[^\n]", temp->name);
+            printf("\n[SUCCESS] Name updated successfully!\n");
+            break;
+
+        case 2:
+            printf("Enter New Department: ");
+            scanf("%20s", temp->department);
+            printf("\n[SUCCESS] Department updated successfully!\n");
+            break;
+
+        case 3:
+            printf("Enter New Email: ");
+            scanf("%100s", temp->email);
+            printf("\n[SUCCESS] Email updated successfully!\n");
+            break;
+
+        case 4:
+            printf("Enter New Phone: ");
+            scanf("%20s", temp->phone);
+            printf("\n[SUCCESS] Phone updated successfully!\n");
+            break;
+
+        case 5:
+            printf("Enter New Password: ");
+            scanf("%100s", temp->password);
+            printf("\n[SUCCESS] Password updated successfully!\n");
+            break;
+
+        case 0:
+            printf("\n[SUCCESS] Advisor information updating finished!\n");
+            printf("\n========== Updated Advisor Details ==========\n");
+            displayAdvisorDetails(temp);
+            saveAdvisors();
+            return;
+
+        default:
+            printf("\n[ERROR] Invalid choice! Please try again.\n");
+        }
+    }
+}
+
+// Function to delete an advisor from the system by admin (asif-249)
+void deleteAdvisor()
+{
+    printf("\n--- Delete Advisor ---\n");
+
+    if (advisorHead == NULL)
+    {
+        printf("\nNo advisors available to delete!\n");
+        return;
+    }
+
+    char searchID[51];
+    printf("Enter Advisor ID: ");
+    scanf("%50s", searchID);
+
+    Advisor *temp = advisorHead;
+    Advisor *prev = NULL;
+    while (temp != NULL)
+    {
+        if (!strcmp(temp->advisorID, searchID))
+        {
+            break;
+        }
+        prev = temp;
+        temp = temp->nxt;
+    }
+
+    if (temp == NULL)
+    {
+        printf("\n[ERROR] No advisor found with ID: %s\n", searchID);
+        return;
+    }
+
+    printf("\n========== Advisor Details ==========\n");
+    displayAdvisorDetails(temp);
+
+    char confirm;
+    printf("\nAre you sure you want to delete this advisor? (Y/N): ");
+    scanf(" %c", &confirm);
+
+    if (confirm == 'Y' || confirm == 'y')
+    {
+        if (prev == NULL)
+        {
+            advisorHead = temp->nxt;
+        }
+        else
+        {
+            prev->nxt = temp->nxt;
+        }
+
+        free(temp);
+        printf("\n[SUCCESS] Advisor deleted successfully!\n");
+        saveAdvisors();
+    }
+    else
+    {
+        printf("\n[INFO] Advisor deletion cancelled.\n");
+    }
+}
+
+// Function to save advisor records to a binary file (asif-249)
+void saveAdvisors()
+{
+    FILE *fp = fopen("advisors.dat", "wb");
+
+    if (fp == NULL)
+    {
+        printf("\n[ERROR] Unable to open advisor file!\n");
+        return;
+    }
+
+    Advisor *temp = advisorHead;
+    AdvisorFileRecord record;
+
+    while (temp != NULL)
+    {
+        strcpy(record.advisorID, temp->advisorID);
+        strcpy(record.name, temp->name);
+        strcpy(record.department, temp->department);
+        strcpy(record.email, temp->email);
+        strcpy(record.phone, temp->phone);
+        strcpy(record.password, temp->password);
+
+        fwrite(&record, sizeof(AdvisorFileRecord), 1, fp);
+
+        temp = temp->nxt;
+    }
+
+    fclose(fp);
+
+    printf("\n[SUCCESS] Advisor records saved successfully!\n");
+}
+
+// Function to load advisor records from a binary file (asif-249)
+void loadAdvisors()
+{
+    FILE *fp = fopen("advisors.dat", "rb");
+
+    if (fp == NULL)
+    {
+        printf("\n[INFO] No existing advisor records found.\n");
+        return;
+    }
+
+    AdvisorFileRecord record;
+
+    while (fread(&record, sizeof(AdvisorFileRecord), 1, fp) == 1)
+    {
+        Advisor *newAdvisor = malloc(sizeof(Advisor));
+
+        if (newAdvisor == NULL)
+        {
+            printf("\n[ERROR] Memory allocation failed!\n");
+            fclose(fp);
+            return;
+        }
+
+        strcpy(newAdvisor->advisorID, record.advisorID);
+        strcpy(newAdvisor->name, record.name);
+        strcpy(newAdvisor->department, record.department);
+        strcpy(newAdvisor->email, record.email);
+        strcpy(newAdvisor->phone, record.phone);
+        strcpy(newAdvisor->password, record.password);
+
+        newAdvisor->nxt = NULL;
+
+        if (advisorHead == NULL)
+        {
+            advisorHead = newAdvisor;
+        }
+        else
+        {
+            Advisor *temp = advisorHead;
+            while (temp->nxt != NULL)
+            {
+                temp = temp->nxt;
+            }
+            temp->nxt = newAdvisor;
+        }
+    }
+
+    fclose(fp);
+    printf("\n[SUCCESS] Advisor records loaded successfully!\n");
+}
+
+// Function to free all dynamically allocated advisor nodes (asif-249)
+void freeAdvisors()
+{
+    Advisor *temp;
+    while (advisorHead != NULL)
+    {
+        temp = advisorHead;
+        advisorHead = advisorHead->nxt;
+        free(temp);
+    }
+    printf("\n[SUCCESS] Advisor memory released successfully!\n");
 }
