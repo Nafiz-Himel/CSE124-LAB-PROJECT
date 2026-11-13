@@ -13,6 +13,9 @@ void viewAllStudents(); // Function prototype for viewing all students by admin 
 void searchStudent();   // Function prototype for searching a student by admin (asif-249)
 void updateStudent();   // Function prototype for updating a student's information by admin (asif-249)
 void deleteStudent();   // Function prototype for deleting a student by admin (asif-249)
+void saveStudents();    // Function prototype for saving student records (asif-249)
+void loadStudents();    // Function prototype for loading student records (asif-249)
+void freeStudents();    // Function prototype for freeing student memory (asif-249)
 
 typedef struct Student // Structure to represent a student (asif-249)
 {
@@ -28,12 +31,26 @@ typedef struct Student // Structure to represent a student (asif-249)
     struct Student *nxt;
 } Student;
 
+typedef struct StudentFileRecord
+{
+    char studentID[21];
+    char name[101];
+    char department[21];
+    int batch;
+    char section[21];
+    char email[101];
+    char phone[21];
+    char advisorID[51];
+    char password[101];
+} StudentFileRecord;
+
 void displayStudentDetails(Student *student); // Function prototype for displaying student details (asif-249)
 
 Student *head = NULL;
 
 int main()
 {
+    loadStudents();
     int choice;
 
     while (1)
@@ -62,6 +79,7 @@ int main()
             login(STUDENT);
             break;
         case 0:
+            freeStudents();
             printf("\nThank you for using DIU Course Registration System!\n");
             return 0;
 
@@ -292,6 +310,7 @@ void addStudent()
     }
 
     printf("\n[SUCCESS] Student added successfully!\n");
+    saveStudents();
 }
 
 // Function to display student details (asif-249)
@@ -463,6 +482,7 @@ void updateStudent()
             printf("\n[INFO] Updating process completed!\n");
             printf("\n--- Updated Student Information ---\n");
             displayStudentDetails(temp);
+            saveStudents();
             return;
 
         default:
@@ -525,9 +545,120 @@ void deleteStudent()
 
         free(temp);
         printf("\n[SUCCESS] Student deleted successfully!\n");
+        saveStudents();
     }
     else
     {
         printf("\n[INFO] Student deletion cancelled.\n");
     }
+}
+
+// Function to save student records to a binary file (asif-249)
+void saveStudents()
+{
+    FILE *fp = fopen("students.dat", "wb");
+
+    if (fp == NULL)
+    {
+        printf("\n[ERROR] Unable to open student file!\n");
+        return;
+    }
+
+    Student *temp = head;
+    StudentFileRecord record;
+
+    while (temp != NULL)
+    {
+        strcpy(record.studentID, temp->studentID);
+        strcpy(record.name, temp->name);
+        strcpy(record.department, temp->department);
+        record.batch = temp->batch;
+        strcpy(record.section, temp->section);
+        strcpy(record.email, temp->email);
+        strcpy(record.phone, temp->phone);
+        strcpy(record.advisorID, temp->advisorID);
+        strcpy(record.password, temp->password);
+
+        fwrite(&record, sizeof(StudentFileRecord), 1, fp);
+
+        temp = temp->nxt;
+    }
+
+    fclose(fp);
+
+    printf("\n[SUCCESS] Student records saved successfully!\n");
+}
+
+// Function to load student records from a binary file (asif-249)
+void loadStudents()
+{
+    FILE *fp = fopen("students.dat", "rb");
+
+    if (fp == NULL)
+    {
+        printf("\n[INFO] No existing student records found.\n");
+        return;
+    }
+
+    StudentFileRecord record;
+
+    while (fread(&record, sizeof(StudentFileRecord), 1, fp) == 1)
+    {
+        Student *newStudent = malloc(sizeof(Student));
+
+        if (newStudent == NULL)
+        {
+            printf("\n[ERROR] Memory allocation failed!\n");
+            fclose(fp);
+            return;
+        }
+
+        strcpy(newStudent->studentID, record.studentID);
+        strcpy(newStudent->name, record.name);
+        strcpy(newStudent->department, record.department);
+        newStudent->batch = record.batch;
+        strcpy(newStudent->section, record.section);
+        strcpy(newStudent->email, record.email);
+        strcpy(newStudent->phone, record.phone);
+        strcpy(newStudent->advisorID, record.advisorID);
+        strcpy(newStudent->password, record.password);
+
+        newStudent->nxt = NULL;
+
+        if (head == NULL)
+        {
+            head = newStudent;
+        }
+        else
+        {
+            Student *temp = head;
+
+            while (temp->nxt != NULL)
+            {
+                temp = temp->nxt;
+            }
+
+            temp->nxt = newStudent;
+        }
+    }
+
+    fclose(fp);
+
+    printf("\n[SUCCESS] Student records loaded successfully!\n");
+}
+
+// Function to free all dynamically allocated student nodes
+void freeStudents()
+{
+    Student *temp;
+
+    while (head != NULL)
+    {
+        temp = head;
+        head = head->nxt;
+
+        free(temp);
+    }
+
+    printf("\n[SUCCESS] Student memory released successfully!\n");
 }
