@@ -6,24 +6,39 @@
 #define ADVISOR 2
 #define STUDENT 3
 
-void login(int role);   // Function prototype for login function (asif-249)
-void adminPanel();      // Function prototype for admin panel (asif-249)
-void addStudent();      // Function prototype for adding a student by admin (asif-249)
-void viewAllStudents(); // Function prototype for viewing all students by admin (asif-249)
-void searchStudent();   // Function prototype for searching a student by admin (asif-249)
-void updateStudent();   // Function prototype for updating a student's information by admin (asif-249)
-void deleteStudent();   // Function prototype for deleting a student by admin (asif-249)
-void saveStudents();    // Function prototype for saving student records (asif-249)
-void loadStudents();    // Function prototype for loading student records (asif-249)
-void freeStudents();    // Function prototype for freeing student memory (asif-249)
-void addAdvisor();      // Function prototype for adding an advisor by admin (asif-249)
-void viewAllAdvisors(); // Function prototype for viewing all advisors by admin (asif-249)
-void searchAdvisor();   // Function prototype for searching an advisor by admin (asif-249)
-void updateAdvisor();   // Function prototype for updating advisor information by admin (asif-249)
-void deleteAdvisor();   // Function prototype for deleting an advisor by admin (asif-249)
-void saveAdvisors(); // Function prototype for saving advisor records (asif-249)
-void loadAdvisors(); // Function prototype for loading advisor records (asif-249)
-void freeAdvisors();    // Function prototype for freeing advisor memory (asif-249)
+void login(int role);                          // Function prototype for login function (asif-249)
+void adminPanel();                             // Function prototype for admin panel (asif-249)
+void addStudent();                             // Function prototype for adding a student by admin (asif-249)
+void viewAllStudents();                        // Function prototype for viewing all students by admin (asif-249)
+void searchStudent();                          // Function prototype for searching a student by admin (asif-249)
+void updateStudent();                          // Function prototype for updating a student's information by admin (asif-249)
+void deleteStudent();                          // Function prototype for deleting a student by admin (asif-249)
+void saveStudents();                           // Function prototype for saving student records (asif-249)
+void loadStudents();                           // Function prototype for loading student records (asif-249)
+void freeStudents();                           // Function prototype for freeing student memory (asif-249)
+void addAdvisor();                             // Function prototype for adding an advisor by admin (asif-249)
+void viewAllAdvisors();                        // Function prototype for viewing all advisors by admin (asif-249)
+void searchAdvisor();                          // Function prototype for searching an advisor by admin (asif-249)
+void updateAdvisor();                          // Function prototype for updating advisor information by admin (asif-249)
+void deleteAdvisor();                          // Function prototype for deleting an advisor by admin (asif-249)
+void saveAdvisors();                           // Function prototype for saving advisor records (asif-249)
+void loadAdvisors();                           // Function prototype for loading advisor records (asif-249)
+void freeAdvisors();                           // Function prototype for freeing advisor memory (asif-249)
+void assignStudentToAdvisor();                 // Function prototype for assigning a student to an advisor by admin (asif-249)
+void viewAdvisorStudents();                    // Function prototype for viewing students assigned to an advisor by admin (asif-249)
+void viewAdvisorWorkload();                    // Function prototype for viewing advisor workload by admin (asif-249)
+void viewUnassignedStudents();                 // Function prototype for viewing unassigned students by admin (asif-249)
+void advisorPanel(char advisorID[]);           // Function prototype for advisor panel (asif-249)
+void viewMyAssignedStudents(char advisorID[]); // Function prototype for viewing assigned students by advisor (asif-249)
+void studentPanel(char studentID[]);           // Function prototype for student panel (asif-249)
+typedef struct Admin
+{
+    char adminID[51];
+    char name[101];
+    char email[101];
+    char password[101];
+    struct Admin *nxt;
+} Admin;
 
 typedef struct Student // Structure to represent a student (asif-249)
 {
@@ -41,19 +56,6 @@ typedef struct Student // Structure to represent a student (asif-249)
 
 void displayStudentDetails(Student *student); // Function prototype for displaying student details (asif-249)
 
-typedef struct StudentFileRecord
-{
-    char studentID[21];
-    char name[101];
-    char department[21];
-    int batch;
-    char section[21];
-    char email[101];
-    char phone[21];
-    char advisorID[51];
-    char password[101];
-} StudentFileRecord;
-
 typedef struct Advisor
 {
     char advisorID[51];
@@ -67,21 +69,13 @@ typedef struct Advisor
 
 void displayAdvisorDetails(Advisor *advisor); // Function prototype for displaying advisor details (asif-249)
 
-typedef struct AdvisorFileRecord
-{
-    char advisorID[51];
-    char name[101];
-    char department[21];
-    char email[101];
-    char phone[21];
-    char password[101];
-} AdvisorFileRecord;
-
-Student *head = NULL;
+Admin *adminHead = NULL;
+Student *studentHead = NULL;
 Advisor *advisorHead = NULL;
 
 int main()
 {
+    loadAdmins();
     loadStudents();
     loadAdvisors();
     int choice;
@@ -112,6 +106,7 @@ int main()
             login(STUDENT);
             break;
         case 0:
+            freeAdmins();
             freeStudents();
             freeAdvisors();
             printf("\nThank you for using DIU Course Registration System!\n");
@@ -130,27 +125,18 @@ void login(int role)
 {
     char inputID[101];
     char inputPassword[101];
-
-    char expectedID[101];
-    char expectedPassword[101];
     char roleName[101];
 
     if (role == ADMIN)
     {
-        strcpy(expectedID, "A001");
-        strcpy(expectedPassword, "admin123");
         strcpy(roleName, "Admin");
     }
     else if (role == ADVISOR)
     {
-        strcpy(expectedID, "ADV001");
-        strcpy(expectedPassword, "advisor123");
         strcpy(roleName, "Advisor");
     }
     else if (role == STUDENT)
     {
-        strcpy(expectedID, "261-15-249");
-        strcpy(expectedPassword, "student123");
         strcpy(roleName, "Student");
     }
     else
@@ -165,17 +151,77 @@ void login(int role)
     printf("Enter Password: ");
     scanf("%100s", inputPassword);
 
-    if (!strcmp(inputID, expectedID) && !strcmp(inputPassword, expectedPassword))
+    if (role == ADMIN)
     {
-        printf("\n[SUCCESS] Welcome, %s! Login successful.\n", roleName);
-        if (role == ADMIN)
+        Admin *temp = adminHead;
+        int found = 0;
+
+        while (temp != NULL)
         {
+            if (!strcmp(inputID, temp->adminID) && !strcmp(inputPassword, temp->password))
+            {
+                found = 1;
+                break;
+            }
+            temp = temp->nxt;
+        }
+        if (found)
+        {
+            printf("\n[SUCCESS] Welcome, %s! Login successful.\n", temp->name);
             adminPanel();
         }
+        else
+        {
+            printf("\n[ERROR] Invalid ID or Password for Admin login.\n");
+        }
     }
-    else
+    else if (role == ADVISOR)
     {
-        printf("\n[ERROR] Invalid ID or Password for %s login.\n", roleName);
+        Advisor *temp = advisorHead;
+        int found = 0;
+
+        while (temp != NULL)
+        {
+            if (!strcmp(inputID, temp->advisorID) && !strcmp(inputPassword, temp->password))
+            {
+                found = 1;
+                break;
+            }
+            temp = temp->nxt;
+        }
+        if (found)
+        {
+            printf("\n[SUCCESS] Welcome, %s! Login successful.\n", temp->name);
+            advisorPanel(inputID);
+        }
+        else
+        {
+            printf("\n[ERROR] Invalid ID or Password for Advisor login.\n");
+        }
+    }
+    else if (role == STUDENT)
+    {
+        Student *temp = studentHead;
+        int found = 0;
+
+        while (temp != NULL)
+        {
+            if (!strcmp(inputID, temp->studentID) && !strcmp(inputPassword, temp->password))
+            {
+                found = 1;
+                break;
+            }
+            temp = temp->nxt;
+        }
+        if (found)
+        {
+            printf("\n[SUCCESS] Welcome, %s! Login successful.\n", temp->name);
+            studentPanel(inputID);
+        }
+        else
+        {
+            printf("\n[ERROR] Invalid ID or Password for Student login.\n");
+        }
     }
 }
 
@@ -201,22 +247,26 @@ void adminPanel()
         printf("8. Search Advisor\n");
         printf("9. Update Advisor\n");
         printf("10. Delete Advisor\n");
+        printf("11. Assign Student to Advisor\n");
+        printf("12. View Advisor's Assigned Students\n");
+        printf("13. View Advisor Workload\n");
+        printf("14. View Unassigned Students\n");
 
         printf("\n---------- DEPARTMENT & BATCH ----------\n");
-        printf("11. Manage Departments\n");
-        printf("12. Manage Batches\n");
+        printf("15. Manage Departments\n");
+        printf("16. Manage Batches\n");
 
         printf("\n---------- SECTION MANAGEMENT ----------\n");
-        printf("13. Manage Sections\n");
+        printf("17. Manage Sections\n");
 
         printf("\n---------- COURSE MANAGEMENT ----------\n");
-        printf("14. Manage Courses\n");
+        printf("18. Manage Courses\n");
 
         printf("\n---------- REGISTRATION MANAGEMENT ----------\n");
-        printf("15. Manage Registration\n");
+        printf("19. Manage Registration\n");
 
         printf("\n---------- REPORTS ----------\n");
-        printf("16. View Reports\n");
+        printf("20. View Reports\n");
 
         printf("\n0. Logout\n");
 
@@ -266,26 +316,42 @@ void adminPanel()
             break;
 
         case 11:
-            printf("\nDepartment Management feature is coming soon!\n");
+            assignStudentToAdvisor();
             break;
 
         case 12:
-            printf("\nBatch Management feature is coming soon!\n");
+            viewAdvisorStudents();
             break;
 
         case 13:
-            printf("\nSection Management feature is coming soon!\n");
+            viewAdvisorWorkload();
             break;
 
         case 14:
-            printf("\nCourse Management feature is coming soon!\n");
+            viewUnassignedStudents();
             break;
 
         case 15:
-            printf("\nRegistration Management feature is coming soon!\n");
+            printf("\nDepartment Management feature is coming soon!\n");
             break;
 
         case 16:
+            printf("\nBatch Management feature is coming soon!\n");
+            break;
+
+        case 17:
+            printf("\nSection Management feature is coming soon!\n");
+            break;
+
+        case 18:
+            printf("\nCourse Management feature is coming soon!\n");
+            break;
+
+        case 19:
+            printf("\nRegistration Management feature is coming soon!\n");
+            break;
+
+        case 20:
             printf("\nReports feature is coming soon!\n");
             break;
 
@@ -299,6 +365,103 @@ void adminPanel()
     }
 }
 
+// Function to save admin records to a text file (asif-249)
+void saveAdmins()
+{
+    FILE *fp = fopen("admins.txt", "w");
+
+    if (fp == NULL)
+    {
+        printf("\n[ERROR] Unable to open admin file!\n");
+        return;
+    }
+
+    Admin *temp = adminHead;
+    while (temp != NULL)
+    {
+        fprintf(fp, "%s|%s|%s|%s\n",
+                temp->adminID,
+                temp->name,
+                temp->email,
+                temp->password);
+
+        temp = temp->nxt;
+    }
+
+    fclose(fp);
+    printf("\n[SUCCESS] Admin records saved successfully!\n");
+}
+
+// Function to load admin records from a text file (asif-249)
+void loadAdmins()
+{
+    FILE *fp = fopen("admins.txt", "r");
+
+    if (fp == NULL)
+    {
+        printf("\n[INFO] No existing admin records found.\n");
+        return;
+    }
+
+    while (1)
+    {
+        Admin *newAdmin = malloc(sizeof(Admin));
+
+        if (newAdmin == NULL)
+        {
+            printf("\n[ERROR] Memory allocation failed!\n");
+            fclose(fp);
+            return;
+        }
+
+        int result = fscanf(fp, "%50[^|]|%100[^|]|%100[^|]|%100[^\n]\n",
+                            newAdmin->adminID,
+                            newAdmin->name,
+                            newAdmin->email,
+                            newAdmin->password);
+
+        if (result != 4)
+        {
+            free(newAdmin);
+            break;
+        }
+
+        newAdmin->nxt = NULL;
+
+        if (adminHead == NULL)
+        {
+            adminHead = newAdmin;
+        }
+        else
+        {
+            Admin *temp = adminHead;
+
+            while (temp->nxt != NULL)
+            {
+                temp = temp->nxt;
+            }
+
+            temp->nxt = newAdmin;
+        }
+    }
+
+    fclose(fp);
+    printf("\n[SUCCESS] Admin records loaded successfully!\n");
+}
+
+// Function to free all dynamically allocated admin nodes
+void freeAdmins()
+{
+    Admin *temp;
+    while (adminHead != NULL)
+    {
+        temp = adminHead;
+        adminHead = adminHead->nxt;
+        free(temp);
+    }
+    printf("\n[SUCCESS] Admin memory released successfully!\n");
+}
+
 // Function to add a new student to the system by admin (asif-249)
 void addStudent()
 {
@@ -309,7 +472,7 @@ void addStudent()
     printf("Enter Student ID: ");
     scanf("%20s", newStudentID);
 
-    Student *temp = head;
+    Student *temp = studentHead;
     while (temp != NULL)
     {
         if (!strcmp(temp->studentID, newStudentID))
@@ -342,20 +505,21 @@ void addStudent()
     scanf("%100s", newStudent->email);
     printf("Enter Phone: ");
     scanf("%20s", newStudent->phone);
-    printf("Enter Advisor ID: ");
-    scanf("%50s", newStudent->advisorID);
+    // printf("Enter Advisor ID: ");
+    // scanf("%50s", newStudent->advisorID);
+    strcpy(newStudent->advisorID, ""); // Initialize advisor ID as empty becase it will be assigned later with assignStudentToAdvisor();
     printf("Enter Password: ");
     scanf("%100s", newStudent->password);
 
     newStudent->nxt = NULL;
 
-    if (head == NULL)
+    if (studentHead == NULL)
     {
-        head = newStudent;
+        studentHead = newStudent;
     }
     else
     {
-        temp = head;
+        temp = studentHead;
         while (temp->nxt != NULL)
         {
             temp = temp->nxt;
@@ -387,14 +551,14 @@ void viewAllStudents()
 {
     printf("\n--- View All Students ---\n");
 
-    if (head == NULL)
+    if (studentHead == NULL)
     {
         printf("No students found in the system.\n");
         return;
     }
 
     int count = 0;
-    Student *temp = head;
+    Student *temp = studentHead;
     while (temp != NULL)
     {
         printf("\n--- Student %d ---\n", count + 1);
@@ -410,7 +574,7 @@ void searchStudent()
 {
     printf("\n--- Search Student ---\n");
 
-    if (head == NULL)
+    if (studentHead == NULL)
     {
         printf("\nNo students available to search!\n");
         return;
@@ -420,7 +584,7 @@ void searchStudent()
     printf("Enter Student ID: ");
     scanf("%20s", searchID);
 
-    Student *temp = head;
+    Student *temp = studentHead;
     while (temp != NULL)
     {
         if (!strcmp(temp->studentID, searchID))
@@ -440,7 +604,7 @@ void updateStudent()
 {
     printf("\n--- Update Student Information ---\n");
 
-    if (head == NULL)
+    if (studentHead == NULL)
     {
         printf("\nNo students available to update!\n");
         return;
@@ -450,7 +614,7 @@ void updateStudent()
     printf("Enter Student ID: ");
     scanf("%20s", searchID);
 
-    Student *temp = head;
+    Student *temp = studentHead;
     while (temp != NULL)
     {
         if (!strcmp(temp->studentID, searchID))
@@ -482,7 +646,7 @@ void updateStudent()
         printf("4. Update Section\n");
         printf("5. Update Email\n");
         printf("6. Update Phone\n");
-        printf("7. Update Advisor ID\n");
+        // printf("7. Update Advisor ID\n");
         printf("0. Finish Updating\n");
 
         printf("\nEnter your choice: ");
@@ -526,11 +690,11 @@ void updateStudent()
             printf("\n[SUCCESS] Phone updated successfully!\n");
             break;
 
-        case 7:
-            printf("Enter New Advisor ID: ");
-            scanf("%50s", temp->advisorID);
-            printf("\n[SUCCESS] Advisor ID updated successfully!\n");
-            break;
+            // case 7:
+            //     printf("Enter New Advisor ID: ");
+            //     scanf("%50s", temp->advisorID);
+            //     printf("\n[SUCCESS] Advisor ID updated successfully!\n");
+            //     break;
 
         case 0:
             printf("\n[INFO] Updating process completed!\n");
@@ -550,7 +714,7 @@ void deleteStudent()
 {
     printf("\n--- Delete Student ---\n");
 
-    if (head == NULL)
+    if (studentHead == NULL)
     {
         printf("\nNo students available to delete!\n");
         return;
@@ -560,7 +724,7 @@ void deleteStudent()
     printf("\nEnter Student ID: ");
     scanf("%20s", searchID);
 
-    Student *temp = head;
+    Student *temp = studentHead;
     Student *prev = NULL;
 
     while (temp != NULL)
@@ -590,7 +754,7 @@ void deleteStudent()
     {
         if (prev == NULL)
         {
-            head = temp->nxt;
+            studentHead = temp->nxt;
         }
         else
         {
@@ -607,10 +771,10 @@ void deleteStudent()
     }
 }
 
-// Function to save student records to a binary file (asif-249)
+// Function to save student records to a text file (asif-249)
 void saveStudents()
 {
-    FILE *fp = fopen("students.dat", "wb");
+    FILE *fp = fopen("students.txt", "w");
 
     if (fp == NULL)
     {
@@ -618,35 +782,31 @@ void saveStudents()
         return;
     }
 
-    Student *temp = head;
-    StudentFileRecord record;
-
+    Student *temp = studentHead;
     while (temp != NULL)
     {
-        strcpy(record.studentID, temp->studentID);
-        strcpy(record.name, temp->name);
-        strcpy(record.department, temp->department);
-        record.batch = temp->batch;
-        strcpy(record.section, temp->section);
-        strcpy(record.email, temp->email);
-        strcpy(record.phone, temp->phone);
-        strcpy(record.advisorID, temp->advisorID);
-        strcpy(record.password, temp->password);
-
-        fwrite(&record, sizeof(StudentFileRecord), 1, fp);
+        fprintf(fp, "%s|%s|%s|%d|%s|%s|%s|%s|%s\n",
+                temp->studentID,
+                temp->name,
+                temp->department,
+                temp->batch,
+                temp->section,
+                temp->email,
+                temp->phone,
+                (temp->advisorID[0] == '\0') ? "-" : temp->advisorID,
+                temp->password);
 
         temp = temp->nxt;
     }
 
     fclose(fp);
-
     printf("\n[SUCCESS] Student records saved successfully!\n");
 }
 
-// Function to load student records from a binary file (asif-249)
+// Function to load student records from a text file (asif-249)
 void loadStudents()
 {
-    FILE *fp = fopen("students.dat", "rb");
+    FILE *fp = fopen("students.txt", "r");
 
     if (fp == NULL)
     {
@@ -654,50 +814,52 @@ void loadStudents()
         return;
     }
 
-    StudentFileRecord record;
-
-    while (fread(&record, sizeof(StudentFileRecord), 1, fp) == 1)
+    Student *newStudent;
+    while (1)
     {
-        Student *newStudent = malloc(sizeof(Student));
-
+        newStudent = malloc(sizeof(Student));
         if (newStudent == NULL)
         {
             printf("\n[ERROR] Memory allocation failed!\n");
             fclose(fp);
             return;
         }
+        int result = fscanf(fp, "%20[^|]|%100[^|]|%20[^|]|%d|%20[^|]|%100[^|]|%20[^|]|%50[^|]|%100[^\n]\n",
+                            newStudent->studentID,
+                            newStudent->name,
+                            newStudent->department,
+                            &newStudent->batch,
+                            newStudent->section,
+                            newStudent->email,
+                            newStudent->phone,
+                            newStudent->advisorID,
+                            newStudent->password);
 
-        strcpy(newStudent->studentID, record.studentID);
-        strcpy(newStudent->name, record.name);
-        strcpy(newStudent->department, record.department);
-        newStudent->batch = record.batch;
-        strcpy(newStudent->section, record.section);
-        strcpy(newStudent->email, record.email);
-        strcpy(newStudent->phone, record.phone);
-        strcpy(newStudent->advisorID, record.advisorID);
-        strcpy(newStudent->password, record.password);
-
-        newStudent->nxt = NULL;
-
-        if (head == NULL)
+        if (result != 9)
         {
-            head = newStudent;
+            free(newStudent);
+            break;
+        }
+        if (strcmp(newStudent->advisorID, "-") == 0)
+        {
+            newStudent->advisorID[0] = '\0';
+        }
+        newStudent->nxt = NULL;
+        if (studentHead == NULL)
+        {
+            studentHead = newStudent;
         }
         else
         {
-            Student *temp = head;
-
+            Student *temp = studentHead;
             while (temp->nxt != NULL)
             {
                 temp = temp->nxt;
             }
-
             temp->nxt = newStudent;
         }
     }
-
     fclose(fp);
-
     printf("\n[SUCCESS] Student records loaded successfully!\n");
 }
 
@@ -705,15 +867,12 @@ void loadStudents()
 void freeStudents()
 {
     Student *temp;
-
-    while (head != NULL)
+    while (studentHead != NULL)
     {
-        temp = head;
-        head = head->nxt;
-
+        temp = studentHead;
+        studentHead = studentHead->nxt;
         free(temp);
     }
-
     printf("\n[SUCCESS] Student memory released successfully!\n");
 }
 
@@ -975,6 +1134,20 @@ void deleteAdvisor()
     printf("\n========== Advisor Details ==========\n");
     displayAdvisorDetails(temp);
 
+    // Check whether any students are assigned to this advisor (asif-249)
+    Student *studentTemp = studentHead;
+    while (studentTemp != NULL)
+    {
+        if (!strcmp(studentTemp->advisorID, searchID))
+        {
+            printf("\n[ERROR] Cannot delete this advisor!\n");
+            printf("This advisor currently has assigned students.\n");
+            printf("Please reassign those students before deleting the advisor.\n");
+            return;
+        }
+        studentTemp = studentTemp->nxt;
+    }
+
     char confirm;
     printf("\nAre you sure you want to delete this advisor? (Y/N): ");
     scanf(" %c", &confirm);
@@ -1000,10 +1173,10 @@ void deleteAdvisor()
     }
 }
 
-// Function to save advisor records to a binary file (asif-249)
+// Function to save advisor records to a text file (asif-249)
 void saveAdvisors()
 {
-    FILE *fp = fopen("advisors.dat", "wb");
+    FILE *fp = fopen("advisors.txt", "w");
 
     if (fp == NULL)
     {
@@ -1012,18 +1185,15 @@ void saveAdvisors()
     }
 
     Advisor *temp = advisorHead;
-    AdvisorFileRecord record;
-
     while (temp != NULL)
     {
-        strcpy(record.advisorID, temp->advisorID);
-        strcpy(record.name, temp->name);
-        strcpy(record.department, temp->department);
-        strcpy(record.email, temp->email);
-        strcpy(record.phone, temp->phone);
-        strcpy(record.password, temp->password);
-
-        fwrite(&record, sizeof(AdvisorFileRecord), 1, fp);
+        fprintf(fp, "%s|%s|%s|%s|%s|%s\n",
+                temp->advisorID,
+                temp->name,
+                temp->department,
+                temp->email,
+                temp->phone,
+                temp->password);
 
         temp = temp->nxt;
     }
@@ -1033,10 +1203,10 @@ void saveAdvisors()
     printf("\n[SUCCESS] Advisor records saved successfully!\n");
 }
 
-// Function to load advisor records from a binary file (asif-249)
+// Function to load advisor records from a text file (asif-249)
 void loadAdvisors()
 {
-    FILE *fp = fopen("advisors.dat", "rb");
+    FILE *fp = fopen("advisors.txt", "r");
 
     if (fp == NULL)
     {
@@ -1044,9 +1214,7 @@ void loadAdvisors()
         return;
     }
 
-    AdvisorFileRecord record;
-
-    while (fread(&record, sizeof(AdvisorFileRecord), 1, fp) == 1)
+    while (1)
     {
         Advisor *newAdvisor = malloc(sizeof(Advisor));
 
@@ -1057,12 +1225,19 @@ void loadAdvisors()
             return;
         }
 
-        strcpy(newAdvisor->advisorID, record.advisorID);
-        strcpy(newAdvisor->name, record.name);
-        strcpy(newAdvisor->department, record.department);
-        strcpy(newAdvisor->email, record.email);
-        strcpy(newAdvisor->phone, record.phone);
-        strcpy(newAdvisor->password, record.password);
+        int result = fscanf(fp, "%50[^|]|%100[^|]|%20[^|]|%100[^|]|%20[^|]|%100[^\n]\n",
+                            newAdvisor->advisorID,
+                            newAdvisor->name,
+                            newAdvisor->department,
+                            newAdvisor->email,
+                            newAdvisor->phone,
+                            newAdvisor->password);
+
+        if (result != 6)
+        {
+            free(newAdvisor);
+            break;
+        }
 
         newAdvisor->nxt = NULL;
 
@@ -1073,14 +1248,15 @@ void loadAdvisors()
         else
         {
             Advisor *temp = advisorHead;
+
             while (temp->nxt != NULL)
             {
                 temp = temp->nxt;
             }
+
             temp->nxt = newAdvisor;
         }
     }
-
     fclose(fp);
     printf("\n[SUCCESS] Advisor records loaded successfully!\n");
 }
@@ -1096,4 +1272,493 @@ void freeAdvisors()
         free(temp);
     }
     printf("\n[SUCCESS] Advisor memory released successfully!\n");
+}
+
+// Function to assign an advisor to a student (asif-249)
+void assignStudentToAdvisor()
+{
+    printf("\n--- Assign Student to Advisor ---\n");
+
+    if (studentHead == NULL)
+    {
+        printf("\n[ERROR] No students available!\n");
+        return;
+    }
+    if (advisorHead == NULL)
+    {
+        printf("\n[ERROR] No advisors available!\n");
+        return;
+    }
+
+    char searchStudentID[21];
+    char searchAdvisorID[51];
+    printf("\nEnter Student ID: ");
+    scanf("%20s", searchStudentID);
+
+    Student *studentTemp = studentHead;
+    while (studentTemp != NULL)
+    {
+        if (!strcmp(studentTemp->studentID, searchStudentID))
+        {
+            break;
+        }
+        studentTemp = studentTemp->nxt;
+    }
+    if (studentTemp == NULL)
+    {
+        printf("\n[ERROR] Student not found!\n");
+        return;
+    }
+    printf("\n[SUCCESS] Student found!\n");
+    displayStudentDetails(studentTemp);
+
+    printf("\nEnter Advisor ID: ");
+    scanf("%50s", searchAdvisorID);
+
+    Advisor *advisorTemp = advisorHead;
+    while (advisorTemp != NULL)
+    {
+        if (!strcmp(advisorTemp->advisorID, searchAdvisorID))
+        {
+            break;
+        }
+        advisorTemp = advisorTemp->nxt;
+    }
+    if (advisorTemp == NULL)
+    {
+        printf("\n[ERROR] Advisor not found!\n");
+        return;
+    }
+    printf("\n[SUCCESS] Advisor found!\n");
+    displayAdvisorDetails(advisorTemp);
+
+    if (strcmp(studentTemp->department, advisorTemp->department) != 0)
+    {
+        printf("\n[ERROR] Department mismatch!\n");
+        printf("Student and advisor must belong to the same department.\n");
+        return;
+    }
+
+    if (studentTemp->advisorID[0] != '\0')
+    {
+        printf("\n[INFO] This student already has an assigned advisor.\n");
+        printf("Current Advisor ID: %s\n", studentTemp->advisorID);
+
+        char confirm;
+        printf("\nDo you want to change the assigned advisor? (Y/N): ");
+        scanf(" %c", &confirm);
+
+        if (confirm != 'Y' && confirm != 'y')
+        {
+            printf("\n[INFO] Advisor reassignment cancelled.\n");
+            return;
+        }
+    }
+
+    strcpy(studentTemp->advisorID, advisorTemp->advisorID);
+
+    printf("\n[SUCCESS] Advisor assigned successfully!\n");
+    printf("Student ID: %s\n", studentTemp->studentID);
+    printf("Assigned Advisor ID: %s\n", studentTemp->advisorID);
+    saveStudents();
+}
+
+// Function to view students assigned to a particular advisor (asif-249)
+void viewAdvisorStudents()
+{
+    printf("\n--- View Advisor's Assigned Students ---\n");
+
+    if (advisorHead == NULL)
+    {
+        printf("\n[ERROR] No advisors available!\n");
+        return;
+    }
+
+    char searchID[51];
+    printf("\nEnter Advisor ID: ");
+    scanf("%50s", searchID);
+
+    Advisor *advisorTemp = advisorHead;
+    while (advisorTemp != NULL)
+    {
+        if (!strcmp(advisorTemp->advisorID, searchID))
+        {
+            break;
+        }
+        advisorTemp = advisorTemp->nxt;
+    }
+    if (advisorTemp == NULL)
+    {
+        printf("\n[ERROR] Advisor not found!\n");
+        return;
+    }
+    printf("\n========== Advisor Details ==========\n");
+    displayAdvisorDetails(advisorTemp);
+
+    Student *studentTemp = studentHead;
+    int count = 0;
+
+    printf("\n========== Assigned Students ==========\n");
+
+    while (studentTemp != NULL)
+    {
+        if (!strcmp(studentTemp->advisorID, searchID))
+        {
+            count++;
+            printf("\n--- Student %d ---\n", count);
+            displayStudentDetails(studentTemp);
+        }
+        studentTemp = studentTemp->nxt;
+    }
+    if (count == 0)
+    {
+        printf("\nNo students are currently assigned to this advisor.\n");
+    }
+    printf("\nTotal assigned students: %d\n", count);
+}
+
+// Function to view the workload of all advisors (asif-249)
+void viewAdvisorWorkload()
+{
+    printf("\n--- View Advisor Workload ---\n");
+
+    if (advisorHead == NULL)
+    {
+        printf("\n[ERROR] No advisors available!\n");
+        return;
+    }
+
+    Advisor *advisorTemp = advisorHead;
+    int totalAdvisors = 0;
+    int totalAssignedStudents = 0;
+
+    printf("\n========== ADVISOR WORKLOAD ==========\n");
+
+    while (advisorTemp != NULL)
+    {
+        Student *studentTemp = studentHead;
+        int studentCount = 0;
+
+        while (studentTemp != NULL)
+        {
+            if (!strcmp(studentTemp->advisorID, advisorTemp->advisorID))
+            {
+                studentCount++;
+            }
+
+            studentTemp = studentTemp->nxt;
+        }
+
+        printf("\nAdvisor ID: %s\n", advisorTemp->advisorID);
+        printf("Advisor Name: %s\n", advisorTemp->name);
+        printf("Department: %s\n", advisorTemp->department);
+        printf("Assigned Students: %d\n", studentCount);
+        printf("-------------------------------------\n");
+
+        totalAdvisors++;
+        totalAssignedStudents += studentCount;
+
+        advisorTemp = advisorTemp->nxt;
+    }
+
+    // int totalStudents = 0;
+    // Student *studentTemp = head;
+    // while (studentTemp != NULL)
+    // {
+    //     totalStudents++;
+    //     studentTemp = studentTemp->nxt;
+    // }
+
+    int totalUnassignedStudents = 0;
+    Student *studentTemp = studentHead;
+    while (studentTemp != NULL)
+    {
+        if (studentTemp->advisorID[0] == '\0')
+        {
+            totalUnassignedStudents++;
+        }
+        studentTemp = studentTemp->nxt;
+    }
+
+    printf("\n========== WORKLOAD SUMMARY ==========\n");
+    printf("Total Advisors: %d\n", totalAdvisors);
+    printf("Total Assigned Students: %d\n", totalAssignedStudents);
+    printf("Total Unassigned Students: %d\n", totalUnassignedStudents);
+}
+
+// Function to view all students without an assigned advisor (asif-249)
+void viewUnassignedStudents()
+{
+    printf("\n--- View All Unassigned Students ---\n");
+
+    if (studentHead == NULL)
+    {
+        printf("\n[ERROR] No students available!\n");
+        return;
+    }
+
+    Student *studentTemp = studentHead;
+    int count = 0;
+
+    printf("\n========== UNASSIGNED STUDENTS ==========\n");
+
+    while (studentTemp != NULL)
+    {
+        if (studentTemp->advisorID[0] == '\0')
+        {
+            count++;
+
+            printf("\n--- Student %d ---\n", count);
+            displayStudentDetails(studentTemp);
+        }
+        studentTemp = studentTemp->nxt;
+    }
+    if (count == 0)
+    {
+        printf("\nAll students have assigned advisors!\n");
+    }
+    printf("\nTotal unassigned students: %d\n", count);
+}
+
+// Function to display the advisor panel and handle advisor operations (asif-249)
+void advisorPanel(char advisorID[])
+{
+    int choice;
+
+    while (1)
+    {
+        printf("\n========== ADVISOR DASHBOARD ==========\n");
+        printf("1. View My Profile\n");
+        printf("2. View My Assigned Students\n");
+        printf("3. Search Assigned Student\n");
+        printf("4. View Student Registration\n");
+        printf("0. Logout\n");
+
+        printf("\nEnter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice)
+        {
+        case 1:
+            printf("\n--- My Profile ---\n");
+
+            Advisor *advisorTemp = advisorHead;
+            while (advisorTemp != NULL)
+            {
+                if (!strcmp(advisorID, advisorTemp->advisorID))
+                {
+                    displayAdvisorDetails(advisorTemp);
+                    break;
+                }
+                advisorTemp = advisorTemp->nxt;
+            }
+
+            if (advisorTemp == NULL)
+            {
+                printf("\n[ERROR] Advisor record not found!\n");
+            }
+            break;
+
+        case 2:
+            viewMyAssignedStudents(advisorID);
+            break;
+
+        case 3:
+        {
+            char searchID[21];
+            printf("\n--- Search Assigned Student ---\n");
+            printf("Enter Student ID: ");
+            scanf("%20s", searchID);
+
+            Student *studentTemp = studentHead;
+            int found = 0;
+            while (studentTemp != NULL)
+            {
+                if (!strcmp(studentTemp->studentID, searchID) && !strcmp(studentTemp->advisorID, advisorID))
+                {
+                    found = 1;
+                    break;
+                }
+
+                studentTemp = studentTemp->nxt;
+            }
+
+            if (found)
+            {
+                printf("\n[SUCCESS] Student found!\n");
+                displayStudentDetails(studentTemp);
+            }
+            else
+            {
+                printf("\n[ERROR] Student not found in your assigned student list!\n");
+            }
+            break;
+        }
+
+        case 4:
+            printf("\n[INFO] Student registration feature is under development.\n");
+            break;
+
+        case 0:
+            printf("\nLogging out...\n");
+            return;
+
+        default:
+            printf("\nInvalid choice! Try again.\n");
+        }
+    }
+}
+
+// Function to view the students assigned to the logged-in advisor (asif-249)
+void viewMyAssignedStudents(char advisorID[])
+{
+    Advisor *advisorTemp = advisorHead;
+    while (advisorTemp != NULL)
+    {
+        if (!strcmp(advisorTemp->advisorID, advisorID))
+            break;
+
+        advisorTemp = advisorTemp->nxt;
+    }
+    if (advisorTemp == NULL)
+    {
+        printf("\n[ERROR] Advisor not found!\n");
+        return;
+    }
+
+    printf("\n--- My Assigned Students ---\n");
+    displayAdvisorDetails(advisorTemp);
+
+    Student *studentTemp = studentHead;
+    int count = 0;
+    while (studentTemp != NULL)
+    {
+        if (!strcmp(studentTemp->advisorID, advisorID))
+        {
+            displayStudentDetails(studentTemp);
+            count++;
+        }
+        studentTemp = studentTemp->nxt;
+    }
+    if (count == 0)
+        printf("\nNo students are currently assigned to you.\n");
+    else
+        printf("\nTotal Assigned Students: %d\n", count);
+}
+
+// Function to display the student panel and handle student operations (asif-249)
+void studentPanel(char studentID[])
+{
+    Student *temp = studentHead;
+    while (temp != NULL)
+    {
+        if (!strcmp(studentID, temp->studentID))
+        {
+            break;
+        }
+
+        temp = temp->nxt;
+    }
+    if (temp == NULL)
+    {
+        printf("\n[ERROR] Student record not found!\n");
+        return;
+    }
+
+    int choice;
+    while (1)
+    {
+        printf("\n========== STUDENT PANEL ==========\n");
+
+        printf("\n1. View My Profile\n");
+        printf("2. View My Advisor\n");
+        printf("3. View Batch & Section Information\n");
+
+        printf("\n---------- SECTION ALLOCATION ----------\n");
+        printf("4. View Available Sections\n");
+        printf("5. Submit Section Preferences\n");
+        printf("6. View Section Request Status\n");
+        printf("7. Respond to Alternative Section\n");
+        printf("8. Request Section Change\n");
+        printf("9. View Section Change Status\n");
+
+        printf("\n---------- COURSE REGISTRATION ----------\n");
+        printf("10. View Available Courses\n");
+        printf("11. Search Course\n");
+        printf("12. View Course Details\n");
+        printf("13. Register Course\n");
+        printf("14. Drop Course\n");
+        printf("15. View Registered Courses\n");
+        printf("16. View Total Credits\n");
+        printf("17. View Waiting List Status\n");
+        printf("18. View Registration History\n");
+        printf("19. View Course Prerequisites\n");
+
+        printf("\n0. Logout\n");
+
+        printf("\nEnter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice)
+        {
+        case 1:
+            printf("\n--- My Profile ---\n");
+            displayStudentDetails(temp);
+            break;
+
+        case 2:
+            if (temp->advisorID[0] == '\0')
+            {
+                printf("\n[INFO] You do not have an assigned advisor yet.\n");
+            }
+            else
+            {
+                Advisor *advisorTemp = advisorHead;
+                while (advisorTemp != NULL)
+                {
+                    if (!strcmp(advisorTemp->advisorID, temp->advisorID))
+                    {
+                        printf("\n--- My Advisor ---\n");
+                        displayAdvisorDetails(advisorTemp);
+                        break;
+                    }
+                    advisorTemp = advisorTemp->nxt;
+                }
+                if (advisorTemp == NULL)
+                {
+                    printf("\n[ERROR] Your assigned advisor record was not found!\n");
+                }
+            }
+            break;
+
+        case 3:
+            printf("\n--- My Batch & Section Information ---\n");
+            printf("Department: %s\n", temp->department);
+            printf("Batch: %d\n", temp->batch);
+
+            if (temp->section[0] == '\0')
+            {
+                printf("Section: Not allocated yet\n");
+            }
+            else
+            {
+                printf("Section: %s\n", temp->section);
+            }
+            break;
+
+        case 0:
+            printf("\nLogging out from Student Panel...\n");
+            return;
+
+        default:
+            if (choice >= 4 && choice <= 19)
+            {
+                printf("\n[INFO] This feature is under development.\n");
+            }
+            else
+            {
+                printf("\n[ERROR] Invalid choice! Please try again.\n");
+            }
+        }
+    }
 }
