@@ -6,35 +6,6 @@
 #define ADVISOR 2
 #define STUDENT 3
 
-// Function Prototypes
-void loadAdmins();
-void loadStudents();
-void loadAdvisors();               
-
-void login(int role);                          
-void adminPanel();                             
-void addStudent();                             
-void viewAllStudents();                        
-void searchStudent();                          
-void updateStudent();                          
-void deleteStudent();                          
-void saveStudents();                           
-void freeStudents();                           
-void addAdvisor();                             
-void viewAllAdvisors();                        
-void searchAdvisor();                          
-void updateAdvisor();                          
-void deleteAdvisor();                          
-void saveAdvisors();                           
-void freeAdvisors();                           
-void assignStudentToAdvisor();                 
-void viewAdvisorStudents();                    
-void viewAdvisorWorkload();                    
-void viewUnassignedStudents();                 
-void advisorPanel(char advisorID[]);           
-void viewMyAssignedStudents(char advisorID[]); 
-void studentPanel(char studentID[]); 
-void displayStudentDetails(Student *student); 
 
 // Data Structures
 typedef struct Admin
@@ -60,7 +31,6 @@ typedef struct Student
     struct Student *nxt;
 } Student;
 
-
 typedef struct Advisor
 {
     char advisorID[51];
@@ -71,6 +41,46 @@ typedef struct Advisor
     char password[101];
     struct Advisor *nxt;
 } Advisor;
+
+
+// Function Prototypes
+void loadAdmins();
+void loadStudents();
+void loadAdvisors();
+
+void login(int role);
+
+void adminPanel();
+void addStudent();
+void updateStudent();
+void deleteStudent();
+void saveStudents();
+void addAdvisor();
+void viewAllAdvisors();
+void searchAdvisor();
+void updateAdvisor();
+void deleteAdvisor();
+void saveAdvisors();
+void assignStudentToAdvisor();
+void viewAdvisorStudents();
+void viewAdvisorWorkload();
+void viewUnassignedStudents();
+
+void advisorPanel(char advisorID[]);
+void viewMyAssignedStudents(char advisorID[]);
+
+void studentPanel(char studentID[]);
+
+void viewAllStudents();
+void searchStudent();
+
+void displayStudentDetails(Student *student);
+void displayAdvisorDetails(Advisor *advisor);
+
+void freeAdmins();
+void freeStudents();
+void freeAdvisors();
+
 
 
 Admin *adminHead = NULL;
@@ -405,6 +415,8 @@ void login(int role)
     }
 }
 
+
+// ADMIN FUNCTIONS
 void adminPanel()
 {
     int choice;
@@ -544,33 +556,6 @@ void adminPanel()
     }
 }
 
-void saveAdmins()
-{
-    FILE *fp = fopen("admins.txt", "w");
-
-    if (fp == NULL)
-    {
-        printf("\n[ERROR] Unable to open admin file!\n");
-        return;
-    }
-
-    Admin *temp = adminHead;
-    while (temp != NULL)
-    {
-        fprintf(fp, "%s|%s|%s|%s\n",
-                temp->adminID,
-                temp->name,
-                temp->email,
-                temp->password);
-
-        temp = temp->nxt;
-    }
-
-    fclose(fp);
-    printf("\n[SUCCESS] Admin records saved successfully!\n");
-}
-
-
 void addStudent()
 {
     printf("\n--- Add New Student ---\n\n");
@@ -615,7 +600,7 @@ void addStudent()
     scanf("%20s", newStudent->phone);
     // printf("Enter Advisor ID: ");
     // scanf("%50s", newStudent->advisorID);
-    strcpy(newStudent->advisorID, ""); // Initialize advisor ID as empty becase it will be assigned later with assignStudentToAdvisor();
+    strcpy(newStudent->advisorID, ""); // Initialize advisor ID as empty because it will be assigned later with assignStudentToAdvisor();
     printf("Enter Password: ");
     scanf("%100s", newStudent->password);
 
@@ -637,71 +622,6 @@ void addStudent()
 
     printf("\n[SUCCESS] Student added successfully!\n");
     saveStudents();
-}
-
-void displayStudentDetails(Student *student)
-{
-    printf("Student ID: %s\n", student->studentID);
-    printf("Name: %s\n", student->name);
-    printf("Department: %s\n", student->department);
-    printf("Batch: %d\n", student->batch);
-    printf("Section: %s\n", student->section);
-    printf("Email: %s\n", student->email);
-    printf("Phone: %s\n", student->phone);
-    printf("Advisor ID: %s\n", student->advisorID);
-
-    printf("=====================================\n");
-}
-
-void viewAllStudents()
-{
-    printf("\n--- View All Students ---\n");
-
-    if (studentHead == NULL)
-    {
-        printf("No students found in the system.\n");
-        return;
-    }
-
-    int count = 0;
-    Student *temp = studentHead;
-    while (temp != NULL)
-    {
-        printf("\n--- Student %d ---\n", count + 1);
-        displayStudentDetails(temp);
-        temp = temp->nxt;
-        count++;
-    }
-    printf("\nTotal students in the system: %d\n", count);
-}
-
-void searchStudent()
-{
-    printf("\n--- Search Student ---\n");
-
-    if (studentHead == NULL)
-    {
-        printf("\nNo students available to search!\n");
-        return;
-    }
-
-    char searchID[21];
-    printf("Enter Student ID: ");
-    scanf("%20s", searchID);
-
-    Student *temp = studentHead;
-    while (temp != NULL)
-    {
-        if (!strcmp(temp->studentID, searchID))
-        {
-            printf("\n[SUCCESS] Student found!\n");
-            printf("\n========== Student Details ==========\n");
-            displayStudentDetails(temp);
-            return;
-        }
-        temp = temp->nxt;
-    }
-    printf("\n[ERROR] No student found with ID: %s\n", searchID);
 }
 
 void updateStudent()
@@ -906,7 +826,6 @@ void saveStudents()
 }
 
 
-
 void addAdvisor()
 {
     printf("\n--- Add New Advisor ---\n\n");
@@ -966,17 +885,6 @@ void addAdvisor()
 
     printf("\n[SUCCESS] Advisor added successfully!\n");
     saveAdvisors();
-}
-
-void displayAdvisorDetails(Advisor *advisor)
-{
-    printf("Advisor ID: %s\n", advisor->advisorID);
-    printf("Name: %s\n", advisor->name);
-    printf("Department: %s\n", advisor->department);
-    printf("Email: %s\n", advisor->email);
-    printf("Phone: %s\n", advisor->phone);
-
-    printf("=====================================\n");
 }
 
 void viewAllAdvisors()
@@ -1226,6 +1134,7 @@ void saveAdvisors()
     printf("\n[SUCCESS] Advisor records saved successfully!\n");
 }
 
+
 void assignStudentToAdvisor()
 {
     printf("\n--- Assign Student to Advisor ---\n");
@@ -1468,6 +1377,8 @@ void viewUnassignedStudents()
     printf("\nTotal unassigned students: %d\n", count);
 }
 
+
+// ADVISOR FUNCTIONS
 void advisorPanel(char advisorID[])
 {
     int choice;
@@ -1592,6 +1503,9 @@ void viewMyAssignedStudents(char advisorID[])
         printf("\nTotal Assigned Students: %d\n", count);
 }
 
+
+
+// STUDENT FUNCTION
 void studentPanel(char studentID[])
 {
     Student *temp = studentHead;
@@ -1707,6 +1621,87 @@ void studentPanel(char studentID[])
         }
     }
 }
+
+
+// COMMON FUNCTIONS (Admin & Advisor)
+void viewAllStudents()
+{
+    printf("\n--- View All Students ---\n");
+
+    if (studentHead == NULL)
+    {
+        printf("No students found in the system.\n");
+        return;
+    }
+
+    int count = 0;
+    Student *temp = studentHead;
+    while (temp != NULL)
+    {
+        printf("\n--- Student %d ---\n", count + 1);
+        displayStudentDetails(temp);
+        temp = temp->nxt;
+        count++;
+    }
+    printf("\nTotal students in the system: %d\n", count);
+}
+
+void searchStudent()
+{
+    printf("\n--- Search Student ---\n");
+
+    if (studentHead == NULL)
+    {
+        printf("\nNo students available to search!\n");
+        return;
+    }
+
+    char searchID[21];
+    printf("Enter Student ID: ");
+    scanf("%20s", searchID);
+
+    Student *temp = studentHead;
+    while (temp != NULL)
+    {
+        if (!strcmp(temp->studentID, searchID))
+        {
+            printf("\n[SUCCESS] Student found!\n");
+            printf("\n========== Student Details ==========\n");
+            displayStudentDetails(temp);
+            return;
+        }
+        temp = temp->nxt;
+    }
+    printf("\n[ERROR] No student found with ID: %s\n", searchID);
+}
+
+
+// COMMON FUNCTIONS (Admin, Advisor & Student)
+void displayStudentDetails(Student *student)
+{
+    printf("Student ID: %s\n", student->studentID);
+    printf("Name: %s\n", student->name);
+    printf("Department: %s\n", student->department);
+    printf("Batch: %d\n", student->batch);
+    printf("Section: %s\n", student->section);
+    printf("Email: %s\n", student->email);
+    printf("Phone: %s\n", student->phone);
+    printf("Advisor ID: %s\n", student->advisorID);
+
+    printf("=====================================\n");
+}
+
+void displayAdvisorDetails(Advisor *advisor)
+{
+    printf("Advisor ID: %s\n", advisor->advisorID);
+    printf("Name: %s\n", advisor->name);
+    printf("Department: %s\n", advisor->department);
+    printf("Email: %s\n", advisor->email);
+    printf("Phone: %s\n", advisor->phone);
+
+    printf("=====================================\n");
+}
+
 
 
 // Release Heap Memory of Admin, Student & Advisor (Singly) Linked Lists
