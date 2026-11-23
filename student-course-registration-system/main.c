@@ -30,7 +30,10 @@ void viewAdvisorWorkload();
 void viewUnassignedStudents();                 
 void advisorPanel(char advisorID[]);           
 void viewMyAssignedStudents(char advisorID[]); 
-void studentPanel(char studentID[]);           
+void studentPanel(char studentID[]); 
+
+// ==================== Data Structures ====================
+
 typedef struct Admin
 {
     char adminID[51];
@@ -71,6 +74,7 @@ typedef struct Advisor
 Admin *adminHead = NULL;
 Student *studentHead = NULL;
 Advisor *advisorHead = NULL;
+
 
 int main()
 {
@@ -118,6 +122,182 @@ int main()
 
     return 0;
 }
+
+
+//Load Persistent Records from Text Files into Singly Linked Lists (Admin, Student, Advisor)
+
+void loadAdmins()
+{
+    FILE *fp = fopen("admins.txt", "r");
+
+    if (fp == NULL)
+    {
+        printf("\n[INFO] No existing admin records found.\n");
+        return;
+    }
+
+    while (1)
+    {
+        Admin *newAdmin = malloc(sizeof(Admin));
+
+        if (newAdmin == NULL)
+        {
+            printf("\n[ERROR] Memory allocation failed!\n");
+            fclose(fp);
+            return;
+        }
+
+        int result = fscanf(fp, "%50[^|]|%100[^|]|%100[^|]|%100[^\n]\n",
+                            newAdmin->adminID,
+                            newAdmin->name,
+                            newAdmin->email,
+                            newAdmin->password);
+
+        if (result != 4)
+        {
+            free(newAdmin);
+            break;
+        }
+
+        newAdmin->nxt = NULL;
+
+        if (adminHead == NULL)
+        {
+            adminHead = newAdmin;
+        }
+        else
+        {
+            Admin *temp = adminHead;
+
+            while (temp->nxt != NULL)
+            {
+                temp = temp->nxt;
+            }
+
+            temp->nxt = newAdmin;
+        }
+    }
+
+    fclose(fp);
+    printf("\n[SUCCESS] Admin records loaded successfully!\n");
+}
+
+void loadStudents()
+{
+    FILE *fp = fopen("students.txt", "r");
+
+    if (fp == NULL)
+    {
+        printf("\n[INFO] No existing student records found.\n");
+        return;
+    }
+
+    Student *newStudent;
+    while (1)
+    {
+        newStudent = malloc(sizeof(Student));
+        if (newStudent == NULL)
+        {
+            printf("\n[ERROR] Memory allocation failed!\n");
+            fclose(fp);
+            return;
+        }
+        int result = fscanf(fp, "%20[^|]|%100[^|]|%20[^|]|%d|%20[^|]|%100[^|]|%20[^|]|%50[^|]|%100[^\n]\n",
+                            newStudent->studentID,
+                            newStudent->name,
+                            newStudent->department,
+                            &newStudent->batch,
+                            newStudent->section,
+                            newStudent->email,
+                            newStudent->phone,
+                            newStudent->advisorID,
+                            newStudent->password);
+
+        if (result != 9)
+        {
+            free(newStudent);
+            break;
+        }
+        if (strcmp(newStudent->advisorID, "-") == 0)
+        {
+            newStudent->advisorID[0] = '\0';
+        }
+        newStudent->nxt = NULL;
+        if (studentHead == NULL)
+        {
+            studentHead = newStudent;
+        }
+        else
+        {
+            Student *temp = studentHead;
+            while (temp->nxt != NULL)
+            {
+                temp = temp->nxt;
+            }
+            temp->nxt = newStudent;
+        }
+    }
+    fclose(fp);
+    printf("\n[SUCCESS] Student records loaded successfully!\n");
+}
+
+void loadAdvisors()
+{
+    FILE *fp = fopen("advisors.txt", "r");
+
+    if (fp == NULL)
+    {
+        printf("\n[INFO] No existing advisor records found.\n");
+        return;
+    }
+
+    while (1)
+    {
+        Advisor *newAdvisor = malloc(sizeof(Advisor));
+
+        if (newAdvisor == NULL)
+        {
+            printf("\n[ERROR] Memory allocation failed!\n");
+            fclose(fp);
+            return;
+        }
+
+        int result = fscanf(fp, "%50[^|]|%100[^|]|%20[^|]|%100[^|]|%20[^|]|%100[^\n]\n",
+                            newAdvisor->advisorID,
+                            newAdvisor->name,
+                            newAdvisor->department,
+                            newAdvisor->email,
+                            newAdvisor->phone,
+                            newAdvisor->password);
+
+        if (result != 6)
+        {
+            free(newAdvisor);
+            break;
+        }
+
+        newAdvisor->nxt = NULL;
+
+        if (advisorHead == NULL)
+        {
+            advisorHead = newAdvisor;
+        }
+        else
+        {
+            Advisor *temp = advisorHead;
+
+            while (temp->nxt != NULL)
+            {
+                temp = temp->nxt;
+            }
+
+            temp->nxt = newAdvisor;
+        }
+    }
+    fclose(fp);
+    printf("\n[SUCCESS] Advisor records loaded successfully!\n");
+}
+
 
 void login(int role)
 {
@@ -388,61 +568,6 @@ void saveAdmins()
     printf("\n[SUCCESS] Admin records saved successfully!\n");
 }
 
-void loadAdmins()
-{
-    FILE *fp = fopen("admins.txt", "r");
-
-    if (fp == NULL)
-    {
-        printf("\n[INFO] No existing admin records found.\n");
-        return;
-    }
-
-    while (1)
-    {
-        Admin *newAdmin = malloc(sizeof(Admin));
-
-        if (newAdmin == NULL)
-        {
-            printf("\n[ERROR] Memory allocation failed!\n");
-            fclose(fp);
-            return;
-        }
-
-        int result = fscanf(fp, "%50[^|]|%100[^|]|%100[^|]|%100[^\n]\n",
-                            newAdmin->adminID,
-                            newAdmin->name,
-                            newAdmin->email,
-                            newAdmin->password);
-
-        if (result != 4)
-        {
-            free(newAdmin);
-            break;
-        }
-
-        newAdmin->nxt = NULL;
-
-        if (adminHead == NULL)
-        {
-            adminHead = newAdmin;
-        }
-        else
-        {
-            Admin *temp = adminHead;
-
-            while (temp->nxt != NULL)
-            {
-                temp = temp->nxt;
-            }
-
-            temp->nxt = newAdmin;
-        }
-    }
-
-    fclose(fp);
-    printf("\n[SUCCESS] Admin records loaded successfully!\n");
-}
 
 void freeAdmins()
 {
@@ -790,65 +915,6 @@ void saveStudents()
     printf("\n[SUCCESS] Student records saved successfully!\n");
 }
 
-void loadStudents()
-{
-    FILE *fp = fopen("students.txt", "r");
-
-    if (fp == NULL)
-    {
-        printf("\n[INFO] No existing student records found.\n");
-        return;
-    }
-
-    Student *newStudent;
-    while (1)
-    {
-        newStudent = malloc(sizeof(Student));
-        if (newStudent == NULL)
-        {
-            printf("\n[ERROR] Memory allocation failed!\n");
-            fclose(fp);
-            return;
-        }
-        int result = fscanf(fp, "%20[^|]|%100[^|]|%20[^|]|%d|%20[^|]|%100[^|]|%20[^|]|%50[^|]|%100[^\n]\n",
-                            newStudent->studentID,
-                            newStudent->name,
-                            newStudent->department,
-                            &newStudent->batch,
-                            newStudent->section,
-                            newStudent->email,
-                            newStudent->phone,
-                            newStudent->advisorID,
-                            newStudent->password);
-
-        if (result != 9)
-        {
-            free(newStudent);
-            break;
-        }
-        if (strcmp(newStudent->advisorID, "-") == 0)
-        {
-            newStudent->advisorID[0] = '\0';
-        }
-        newStudent->nxt = NULL;
-        if (studentHead == NULL)
-        {
-            studentHead = newStudent;
-        }
-        else
-        {
-            Student *temp = studentHead;
-            while (temp->nxt != NULL)
-            {
-                temp = temp->nxt;
-            }
-            temp->nxt = newStudent;
-        }
-    }
-    fclose(fp);
-    printf("\n[SUCCESS] Student records loaded successfully!\n");
-}
-
 void freeStudents()
 {
     Student *temp;
@@ -1178,63 +1244,6 @@ void saveAdvisors()
     fclose(fp);
 
     printf("\n[SUCCESS] Advisor records saved successfully!\n");
-}
-
-void loadAdvisors()
-{
-    FILE *fp = fopen("advisors.txt", "r");
-
-    if (fp == NULL)
-    {
-        printf("\n[INFO] No existing advisor records found.\n");
-        return;
-    }
-
-    while (1)
-    {
-        Advisor *newAdvisor = malloc(sizeof(Advisor));
-
-        if (newAdvisor == NULL)
-        {
-            printf("\n[ERROR] Memory allocation failed!\n");
-            fclose(fp);
-            return;
-        }
-
-        int result = fscanf(fp, "%50[^|]|%100[^|]|%20[^|]|%100[^|]|%20[^|]|%100[^\n]\n",
-                            newAdvisor->advisorID,
-                            newAdvisor->name,
-                            newAdvisor->department,
-                            newAdvisor->email,
-                            newAdvisor->phone,
-                            newAdvisor->password);
-
-        if (result != 6)
-        {
-            free(newAdvisor);
-            break;
-        }
-
-        newAdvisor->nxt = NULL;
-
-        if (advisorHead == NULL)
-        {
-            advisorHead = newAdvisor;
-        }
-        else
-        {
-            Advisor *temp = advisorHead;
-
-            while (temp->nxt != NULL)
-            {
-                temp = temp->nxt;
-            }
-
-            temp->nxt = newAdvisor;
-        }
-    }
-    fclose(fp);
-    printf("\n[SUCCESS] Advisor records loaded successfully!\n");
 }
 
 void freeAdvisors()
