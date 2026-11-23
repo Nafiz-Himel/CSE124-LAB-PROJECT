@@ -6,6 +6,11 @@
 #define ADVISOR 2
 #define STUDENT 3
 
+// Function Prototypes
+void loadAdmins();
+void loadStudents();
+void loadAdvisors();               
+
 void login(int role);                          
 void adminPanel();                             
 void addStudent();                             
@@ -14,7 +19,6 @@ void searchStudent();
 void updateStudent();                          
 void deleteStudent();                          
 void saveStudents();                           
-void loadStudents();                           
 void freeStudents();                           
 void addAdvisor();                             
 void viewAllAdvisors();                        
@@ -22,7 +26,6 @@ void searchAdvisor();
 void updateAdvisor();                          
 void deleteAdvisor();                          
 void saveAdvisors();                           
-void loadAdvisors();                           
 void freeAdvisors();                           
 void assignStudentToAdvisor();                 
 void viewAdvisorStudents();                    
@@ -31,9 +34,9 @@ void viewUnassignedStudents();
 void advisorPanel(char advisorID[]);           
 void viewMyAssignedStudents(char advisorID[]); 
 void studentPanel(char studentID[]); 
+void displayStudentDetails(Student *student); 
 
-// ==================== Data Structures ====================
-
+// Data Structures
 typedef struct Admin
 {
     char adminID[51];
@@ -57,7 +60,6 @@ typedef struct Student
     struct Student *nxt;
 } Student;
 
-void displayStudentDetails(Student *student); 
 
 typedef struct Advisor
 {
@@ -125,7 +127,6 @@ int main()
 
 
 //Load Persistent Records from Text Files into Singly Linked Lists (Admin, Student, Advisor)
-
 void loadAdmins()
 {
     FILE *fp = fopen("admins.txt", "r");
@@ -297,6 +298,7 @@ void loadAdvisors()
     fclose(fp);
     printf("\n[SUCCESS] Advisor records loaded successfully!\n");
 }
+
 
 
 void login(int role)
@@ -568,18 +570,6 @@ void saveAdmins()
     printf("\n[SUCCESS] Admin records saved successfully!\n");
 }
 
-
-void freeAdmins()
-{
-    Admin *temp;
-    while (adminHead != NULL)
-    {
-        temp = adminHead;
-        adminHead = adminHead->nxt;
-        free(temp);
-    }
-    printf("\n[SUCCESS] Admin memory released successfully!\n");
-}
 
 void addStudent()
 {
@@ -915,17 +905,7 @@ void saveStudents()
     printf("\n[SUCCESS] Student records saved successfully!\n");
 }
 
-void freeStudents()
-{
-    Student *temp;
-    while (studentHead != NULL)
-    {
-        temp = studentHead;
-        studentHead = studentHead->nxt;
-        free(temp);
-    }
-    printf("\n[SUCCESS] Student memory released successfully!\n");
-}
+
 
 void addAdvisor()
 {
@@ -1244,18 +1224,6 @@ void saveAdvisors()
     fclose(fp);
 
     printf("\n[SUCCESS] Advisor records saved successfully!\n");
-}
-
-void freeAdvisors()
-{
-    Advisor *temp;
-    while (advisorHead != NULL)
-    {
-        temp = advisorHead;
-        advisorHead = advisorHead->nxt;
-        free(temp);
-    }
-    printf("\n[SUCCESS] Advisor memory released successfully!\n");
 }
 
 void assignStudentToAdvisor()
@@ -1738,4 +1706,42 @@ void studentPanel(char studentID[])
             }
         }
     }
+}
+
+
+// Release Heap Memory of Admin, Student & Advisor (Singly) Linked Lists
+void freeAdmins()
+{
+    Admin *temp;
+    while (adminHead != NULL)
+    {
+        temp = adminHead;
+        adminHead = adminHead->nxt;
+        free(temp);
+    }
+    printf("\n[SUCCESS] Admin memory released successfully!\n");
+}
+
+void freeStudents()
+{
+    Student *temp;
+    while (studentHead != NULL)
+    {
+        temp = studentHead;
+        studentHead = studentHead->nxt;
+        free(temp);
+    }
+    printf("\n[SUCCESS] Student memory released successfully!\n");
+}
+
+void freeAdvisors()
+{
+    Advisor *temp;
+    while (advisorHead != NULL)
+    {
+        temp = advisorHead;
+        advisorHead = advisorHead->nxt;
+        free(temp);
+    }
+    printf("\n[SUCCESS] Advisor memory released successfully!\n");
 }
