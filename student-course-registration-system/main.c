@@ -6,31 +6,31 @@
 #define ADVISOR 2
 #define STUDENT 3
 
-void login(int role);                          // Function prototype for login function (asif-249)
-void adminPanel();                             // Function prototype for admin panel (asif-249)
-void addStudent();                             // Function prototype for adding a student by admin (asif-249)
-void viewAllStudents();                        // Function prototype for viewing all students by admin (asif-249)
-void searchStudent();                          // Function prototype for searching a student by admin (asif-249)
-void updateStudent();                          // Function prototype for updating a student's information by admin (asif-249)
-void deleteStudent();                          // Function prototype for deleting a student by admin (asif-249)
-void saveStudents();                           // Function prototype for saving student records (asif-249)
-void loadStudents();                           // Function prototype for loading student records (asif-249)
-void freeStudents();                           // Function prototype for freeing student memory (asif-249)
-void addAdvisor();                             // Function prototype for adding an advisor by admin (asif-249)
-void viewAllAdvisors();                        // Function prototype for viewing all advisors by admin (asif-249)
-void searchAdvisor();                          // Function prototype for searching an advisor by admin (asif-249)
-void updateAdvisor();                          // Function prototype for updating advisor information by admin (asif-249)
-void deleteAdvisor();                          // Function prototype for deleting an advisor by admin (asif-249)
-void saveAdvisors();                           // Function prototype for saving advisor records (asif-249)
-void loadAdvisors();                           // Function prototype for loading advisor records (asif-249)
-void freeAdvisors();                           // Function prototype for freeing advisor memory (asif-249)
-void assignStudentToAdvisor();                 // Function prototype for assigning a student to an advisor by admin (asif-249)
-void viewAdvisorStudents();                    // Function prototype for viewing students assigned to an advisor by admin (asif-249)
-void viewAdvisorWorkload();                    // Function prototype for viewing advisor workload by admin (asif-249)
-void viewUnassignedStudents();                 // Function prototype for viewing unassigned students by admin (asif-249)
-void advisorPanel(char advisorID[]);           // Function prototype for advisor panel (asif-249)
-void viewMyAssignedStudents(char advisorID[]); // Function prototype for viewing assigned students by advisor (asif-249)
-void studentPanel(char studentID[]);           // Function prototype for student panel (asif-249)
+void login(int role);                          
+void adminPanel();                             
+void addStudent();                             
+void viewAllStudents();                        
+void searchStudent();                          
+void updateStudent();                          
+void deleteStudent();                          
+void saveStudents();                           
+void loadStudents();                           
+void freeStudents();                           
+void addAdvisor();                             
+void viewAllAdvisors();                        
+void searchAdvisor();                          
+void updateAdvisor();                          
+void deleteAdvisor();                          
+void saveAdvisors();                           
+void loadAdvisors();                           
+void freeAdvisors();                           
+void assignStudentToAdvisor();                 
+void viewAdvisorStudents();                    
+void viewAdvisorWorkload();                    
+void viewUnassignedStudents();                 
+void advisorPanel(char advisorID[]);           
+void viewMyAssignedStudents(char advisorID[]); 
+void studentPanel(char studentID[]);           
 typedef struct Admin
 {
     char adminID[51];
@@ -40,7 +40,7 @@ typedef struct Admin
     struct Admin *nxt;
 } Admin;
 
-typedef struct Student // Structure to represent a student (asif-249)
+typedef struct Student 
 {
     char studentID[21];
     char name[101];
@@ -54,7 +54,7 @@ typedef struct Student // Structure to represent a student (asif-249)
     struct Student *nxt;
 } Student;
 
-void displayStudentDetails(Student *student); // Function prototype for displaying student details (asif-249)
+void displayStudentDetails(Student *student); 
 
 typedef struct Advisor
 {
@@ -67,7 +67,6 @@ typedef struct Advisor
     struct Advisor *nxt;
 } Advisor;
 
-void displayAdvisorDetails(Advisor *advisor); // Function prototype for displaying advisor details (asif-249)
 
 Admin *adminHead = NULL;
 Student *studentHead = NULL;
@@ -120,7 +119,6 @@ int main()
     return 0;
 }
 
-// Function to handle login for different roles (asif-249)
 void login(int role)
 {
     char inputID[101];
@@ -225,7 +223,6 @@ void login(int role)
     }
 }
 
-// Function to display the admin panel and handle admin operations (asif-249)
 void adminPanel()
 {
     int choice;
@@ -365,7 +362,6 @@ void adminPanel()
     }
 }
 
-// Function to save admin records to a text file (asif-249)
 void saveAdmins()
 {
     FILE *fp = fopen("admins.txt", "w");
@@ -392,7 +388,6 @@ void saveAdmins()
     printf("\n[SUCCESS] Admin records saved successfully!\n");
 }
 
-// Function to load admin records from a text file (asif-249)
 void loadAdmins()
 {
     FILE *fp = fopen("admins.txt", "r");
@@ -449,7 +444,6 @@ void loadAdmins()
     printf("\n[SUCCESS] Admin records loaded successfully!\n");
 }
 
-// Function to free all dynamically allocated admin nodes
 void freeAdmins()
 {
     Admin *temp;
@@ -462,7 +456,6 @@ void freeAdmins()
     printf("\n[SUCCESS] Admin memory released successfully!\n");
 }
 
-// Function to add a new student to the system by admin (asif-249)
 void addStudent()
 {
     printf("\n--- Add New Student ---\n\n");
@@ -531,7 +524,6 @@ void addStudent()
     saveStudents();
 }
 
-// Function to display student details (asif-249)
 void displayStudentDetails(Student *student)
 {
     printf("Student ID: %s\n", student->studentID);
@@ -546,7 +538,6 @@ void displayStudentDetails(Student *student)
     printf("=====================================\n");
 }
 
-// Function to view all students in the system by admin (asif-249)
 void viewAllStudents()
 {
     printf("\n--- View All Students ---\n");
@@ -569,7 +560,6 @@ void viewAllStudents()
     printf("\nTotal students in the system: %d\n", count);
 }
 
-// Function to search for a student in the system by admin (asif-249)
 void searchStudent()
 {
     printf("\n--- Search Student ---\n");
@@ -599,7 +589,6 @@ void searchStudent()
     printf("\n[ERROR] No student found with ID: %s\n", searchID);
 }
 
-// Function to update a student's information by admin (asif-249)
 void updateStudent()
 {
     printf("\n--- Update Student Information ---\n");
@@ -709,7 +698,6 @@ void updateStudent()
     }
 }
 
-// Function to delete a student from the system by admin (asif-249)
 void deleteStudent()
 {
     printf("\n--- Delete Student ---\n");
@@ -771,7 +759,6 @@ void deleteStudent()
     }
 }
 
-// Function to save student records to a text file (asif-249)
 void saveStudents()
 {
     FILE *fp = fopen("students.txt", "w");
@@ -803,7 +790,6 @@ void saveStudents()
     printf("\n[SUCCESS] Student records saved successfully!\n");
 }
 
-// Function to load student records from a text file (asif-249)
 void loadStudents()
 {
     FILE *fp = fopen("students.txt", "r");
@@ -863,7 +849,6 @@ void loadStudents()
     printf("\n[SUCCESS] Student records loaded successfully!\n");
 }
 
-// Function to free all dynamically allocated student nodes
 void freeStudents()
 {
     Student *temp;
@@ -876,7 +861,6 @@ void freeStudents()
     printf("\n[SUCCESS] Student memory released successfully!\n");
 }
 
-// Function to add a new advisor to the system by admin (asif-249)
 void addAdvisor()
 {
     printf("\n--- Add New Advisor ---\n\n");
@@ -938,7 +922,6 @@ void addAdvisor()
     saveAdvisors();
 }
 
-// Function to display advisor details (asif-249)
 void displayAdvisorDetails(Advisor *advisor)
 {
     printf("Advisor ID: %s\n", advisor->advisorID);
@@ -950,7 +933,6 @@ void displayAdvisorDetails(Advisor *advisor)
     printf("=====================================\n");
 }
 
-// Function to view all advisors in the system by admin (asif-249)
 void viewAllAdvisors()
 {
     printf("\n--- View All Advisors ---\n");
@@ -974,7 +956,6 @@ void viewAllAdvisors()
     printf("\nTotal advisors in the system: %d\n", count);
 }
 
-// Function to search for an advisor in the system by admin (asif-249)
 void searchAdvisor()
 {
     printf("\n--- Search Advisor ---\n");
@@ -1004,7 +985,6 @@ void searchAdvisor()
     printf("\n[ERROR] No advisor found with ID: %s\n", searchID);
 }
 
-// Function to update advisor information by admin (asif-249)
 void updateAdvisor()
 {
     printf("\n--- Update Advisor ---\n");
@@ -1098,7 +1078,6 @@ void updateAdvisor()
     }
 }
 
-// Function to delete an advisor from the system by admin (asif-249)
 void deleteAdvisor()
 {
     printf("\n--- Delete Advisor ---\n");
@@ -1134,7 +1113,6 @@ void deleteAdvisor()
     printf("\n========== Advisor Details ==========\n");
     displayAdvisorDetails(temp);
 
-    // Check whether any students are assigned to this advisor (asif-249)
     Student *studentTemp = studentHead;
     while (studentTemp != NULL)
     {
@@ -1173,7 +1151,6 @@ void deleteAdvisor()
     }
 }
 
-// Function to save advisor records to a text file (asif-249)
 void saveAdvisors()
 {
     FILE *fp = fopen("advisors.txt", "w");
@@ -1203,7 +1180,6 @@ void saveAdvisors()
     printf("\n[SUCCESS] Advisor records saved successfully!\n");
 }
 
-// Function to load advisor records from a text file (asif-249)
 void loadAdvisors()
 {
     FILE *fp = fopen("advisors.txt", "r");
@@ -1261,7 +1237,6 @@ void loadAdvisors()
     printf("\n[SUCCESS] Advisor records loaded successfully!\n");
 }
 
-// Function to free all dynamically allocated advisor nodes (asif-249)
 void freeAdvisors()
 {
     Advisor *temp;
@@ -1274,7 +1249,6 @@ void freeAdvisors()
     printf("\n[SUCCESS] Advisor memory released successfully!\n");
 }
 
-// Function to assign an advisor to a student (asif-249)
 void assignStudentToAdvisor()
 {
     printf("\n--- Assign Student to Advisor ---\n");
@@ -1363,7 +1337,6 @@ void assignStudentToAdvisor()
     saveStudents();
 }
 
-// Function to view students assigned to a particular advisor (asif-249)
 void viewAdvisorStudents()
 {
     printf("\n--- View Advisor's Assigned Students ---\n");
@@ -1417,7 +1390,6 @@ void viewAdvisorStudents()
     printf("\nTotal assigned students: %d\n", count);
 }
 
-// Function to view the workload of all advisors (asif-249)
 void viewAdvisorWorkload()
 {
     printf("\n--- View Advisor Workload ---\n");
@@ -1486,7 +1458,6 @@ void viewAdvisorWorkload()
     printf("Total Unassigned Students: %d\n", totalUnassignedStudents);
 }
 
-// Function to view all students without an assigned advisor (asif-249)
 void viewUnassignedStudents()
 {
     printf("\n--- View All Unassigned Students ---\n");
@@ -1520,7 +1491,6 @@ void viewUnassignedStudents()
     printf("\nTotal unassigned students: %d\n", count);
 }
 
-// Function to display the advisor panel and handle advisor operations (asif-249)
 void advisorPanel(char advisorID[])
 {
     int choice;
@@ -1609,7 +1579,6 @@ void advisorPanel(char advisorID[])
     }
 }
 
-// Function to view the students assigned to the logged-in advisor (asif-249)
 void viewMyAssignedStudents(char advisorID[])
 {
     Advisor *advisorTemp = advisorHead;
@@ -1646,7 +1615,6 @@ void viewMyAssignedStudents(char advisorID[])
         printf("\nTotal Assigned Students: %d\n", count);
 }
 
-// Function to display the student panel and handle student operations (asif-249)
 void studentPanel(char studentID[])
 {
     Student *temp = studentHead;
