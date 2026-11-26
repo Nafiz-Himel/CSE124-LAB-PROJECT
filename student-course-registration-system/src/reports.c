@@ -115,13 +115,13 @@ void reportAllStudents()
     Student *s = studentHead;
     int count = 0;
     if (!fp) return;
-    snprintf(buf, sizeof(buf), "%-12s %-20s %-6s %-8s %-10s\n", "ID", "Name", "Batch", "Section", "Advisor");
+    snprintf(buf, sizeof(buf), "%-12s %-20s %-6s %-8s %-5s %-10s\n", "ID", "Name", "Batch", "Section", "Sem", "Advisor");
     out(fp, buf);
     printLine(); if (fp) fprintf(fp, "------------------------------------------------------------\n");
     while (s)
     {
-        snprintf(buf, sizeof(buf), "%-12s %-20.20s %-6d %-8s %-10s\n",
-                 s->studentID, s->name, s->batch, s->section,
+        snprintf(buf, sizeof(buf), "%-12s %-20.20s %-6d %-8s %-5d %-10s\n",
+                 s->studentID, s->name, s->batch, s->section, s->currentSemester,
                  s->advisorID[0] == '\0' ? "-" : s->advisorID);
         out(fp, buf);
         count++;
@@ -154,7 +154,7 @@ void reportStudentsByBatchSection()
         int sectionOk = (strcmp(section, "ALL") == 0 || strcmp(s->section, section) == 0);
         if (batchOk && sectionOk)
         {
-            snprintf(buf, sizeof(buf), "%-12s %-20.20s %-6d %-8s\n", s->studentID, s->name, s->batch, s->section);
+            snprintf(buf, sizeof(buf), "%-12s %-20.20s %-6d %-8s Sem:%d\n", s->studentID, s->name, s->batch, s->section, s->currentSemester);
             out(fp, buf);
             count++;
         }
@@ -238,7 +238,7 @@ void reportAdvisorDetail()
     {
         if (strcmp(s->advisorID, advisorID) == 0)
         {
-            snprintf(buf, sizeof(buf), "%-12s %-20.20s %-6d %-8s\n", s->studentID, s->name, s->batch, s->section);
+            snprintf(buf, sizeof(buf), "%-12s %-20.20s %-6d %-8s Sem:%d\n", s->studentID, s->name, s->batch, s->section, s->currentSemester);
             out(fp, buf);
             count++;
         }
@@ -308,6 +308,7 @@ void reportCourseRegistrationSummary()
     while (c != NULL)
     {
         int enrolled = 0, waiting = 0;
+        Section *sec = sectionHead;
         r = registrationHead;
         while (r != NULL)
         {
@@ -318,8 +319,21 @@ void reportCourseRegistrationSummary()
             }
             r = r->nxt;
         }
-        snprintf(buf, sizeof(buf), "%-10s %-20.20s Cr:%.1f Cap:%d Reg:%d Wait:%d\n", c->code, c->name, c->credits, c->capacity, enrolled, waiting);
+        snprintf(buf, sizeof(buf), "%-10s %-20.20s Cr:%.1f Sem:%d Reg:%d Wait:%d\n",
+                 c->code, c->name, c->credits, c->semester, enrolled, waiting);
         out(fp, buf);
+        while (sec != NULL)
+        {
+            int secReg = countCourseSectionRegistrations(c->code, sec->sectionName);
+            int secWait = countCourseSectionWaitlist(c->code, sec->sectionName);
+            if (secReg > 0 || secWait > 0)
+            {
+                snprintf(buf, sizeof(buf), "  %d|%s Cap:%d Reg:%d Wait:%d\n",
+                         sec->batchYear, sec->sectionName, sec->capacity, secReg, secWait);
+                out(fp, buf);
+            }
+            sec = sec->nxt;
+        }
         courseCount++;
         c = c->nxt;
     }
@@ -375,7 +389,7 @@ void reportRegistrationHistory()
     if (!fp) return;
     while (h != NULL)
     {
-        snprintf(buf, sizeof(buf), "%s | %s | %s\n", h->studentID, h->action, h->courseCode);
+        snprintf(buf, sizeof(buf), "%s | %s | %s | %s\n", h->studentID, h->action, h->courseCode, h->section);
         out(fp, buf);
         count++; h = h->nxt;
     }

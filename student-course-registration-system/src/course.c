@@ -13,6 +13,12 @@ Course *findCourse(const char *code)
     return NULL;
 }
 
+int isCourseEligibleForSemester(const char *courseCode, int semester)
+{
+    Course *c = findCourse(courseCode);
+    return c != NULL && c->semester == semester;
+}
+
 int prereqExists(const char *courseCode, const char *prereqCode)
 {
     Prerequisite *p = prereqHead;
@@ -56,7 +62,7 @@ void loadCourses()
     {
         c = malloc(sizeof(Course));
         if (!c) { fclose(fp); return; }
-        if (fscanf(fp, "%20[^|]|%100[^|]|%f|%d\n", c->code, c->name, &c->credits, &c->capacity) != 4)
+        if (fscanf(fp, "%20[^|]|%100[^|]|%f|%d\n", c->code, c->name, &c->credits, &c->semester) != 4)
         { free(c); break; }
         c->nxt = NULL;
         if (!courseHead) courseHead = c; else { Course *t=courseHead; while(t->nxt) t=t->nxt; t->nxt=c; }
@@ -69,7 +75,7 @@ void saveCourses()
     FILE *fp = fopen("data/courses.txt", "w");
     Course *t = courseHead;
     if (!fp) { printf("\n[ERROR] Unable to save courses.\n"); return; }
-    while (t) { fprintf(fp, "%s|%s|%.1f|%d\n", t->code, t->name, t->credits, t->capacity); t = t->nxt; }
+    while (t) { fprintf(fp, "%s|%s|%.1f|%d\n", t->code, t->name, t->credits, t->semester); t = t->nxt; }
     fclose(fp);
 }
 
@@ -112,7 +118,7 @@ void addCourse()
     strcpy(c->code, code);
     readLine("Enter Course Name: ", c->name, sizeof(c->name));
     c->credits = readFloatRange("Enter Credits: ", 0.5f, 30.0f);
-    c->capacity = readIntRange("Enter Capacity: ", 1, 500);
+    c->semester = readIntRange("Enter Semester (1-12): ", 1, 12);
     c->nxt = NULL;
     if (courseHead == NULL) courseHead = c; else { Course *t=courseHead; while(t->nxt!=NULL) t=t->nxt; t->nxt=c; }
     saveCourses();
@@ -123,8 +129,8 @@ void listCourses()
 {
     Course *t = courseHead;
     if (!t) { printf("\nNo courses found.\n"); return; }
-    printf("\n%-10s %-35s %-8s %-8s\n", "Code", "Name", "Credit", "Cap");
-    while (t) { printf("%-10s %-35.35s %-8.1f %-8d\n", t->code, t->name, t->credits, t->capacity); t = t->nxt; }
+    printf("\n%-10s %-35s %-8s %-8s\n", "Code", "Name", "Credit", "Sem");
+    while (t) { printf("%-10s %-35.35s %-8.1f %-8d\n", t->code, t->name, t->credits, t->semester); t = t->nxt; }
 }
 
 void deleteCourse()
@@ -215,7 +221,7 @@ void searchCourse()
     readToken("Enter Course Code: ", code, 20);
     c = findCourse(code);
     if (c == NULL) { printError("Course not found."); return; }
-    printf("\nCode: %s\nName: %s\nCredits: %.1f\nCapacity: %d\n", c->code, c->name, c->credits, c->capacity);
+    printf("\nCode: %s\nName: %s\nCredits: %.1f\nSemester: %d\n", c->code, c->name, c->credits, c->semester);
 }
 
 void viewCourseDetails()

@@ -1,90 +1,90 @@
-CSE112|Computer Fundamentals|3.0|60
-CSE113|Programming and Problem Solving|3.0|60
-CSE114|Programming and Problem-Solving Lab|1.5|60
-CSE115|Introduction to Biology & Chemistry for Computation|3.0|60
-CSE121|Electrical Circuits|3.0|60
-CSE122|Electrical Circuits Lab|1.5|60
-CSE123|Data Structure|3.0|60
-CSE124|Data Structure Lab|1.5|60
-CSE212|Discrete Mathematics|3.0|60
-CSE213|Algorithms|3.0|60
-CSE214|Algorithms Lab|1.5|60
-CSE215|Electronic Devices and Circuits|3.0|60
-CSE216|Electronic Devices and Circuits Lab|1.5|60
-CSE221|Object Oriented Programming|3.0|60
-CSE222|Object Oriented Programming Lab|1.5|60
-CSE223|Digital Logic Design|3.0|60
-CSE224|Digital Logic Design Lab|1.5|60
-CSE225|Data Communication|3.0|60
-CSE226|Numerical Methods|3.0|60
-CSE227|Systems Analysis and Design|3.0|60
-CSE228|Theory of Computation|3.0|60
-CSE311|Database Management System|3.0|60
-CSE312|Database Management System Lab|1.5|60
-CSE313|Compiler Design|3.0|60
-CSE314|Compiler Design Lab|1.5|60
-CSE315|Software Engineering|3.0|60
-CSE316|Artificial Intelligence|3.0|60
-CSE317|Microprocessor and Microcontrollers|3.0|60
-CSE321|Computer Networks|3.0|60
-CSE322|Computer Networks Lab|1.5|60
-CSE323|Operating Systems|3.0|60
-CSE324|Operating Systems Lab|1.5|60
-CSE325|Instrumentation and Control|3.0|60
-CSE326|Social and Professional Issues in Computing|3.0|60
-CSE411|Computer Graphics|3.0|60
-CSE412|Computer Graphics Lab|1.5|60
-CSE413|Computer Architecture and Organization|3.0|60
-ENG101|Basic Functional English and English Spoken|3.0|60
-ENG102|Writing and Comprehension|3.0|60
-MAT101|Mathematics-I|3.0|60
-MAT102|Mathematics-II: Calculus, Complex Variables & Linear Algebra|3.0|60
-MAT211|Engineering Mathematics|3.0|60
-PHY101|Physics-I|3.0|60
-PHY102|Physics-II|3.0|60
-PHY103|Physics-II Lab|1.5|60
-BNS101|Bangladesh Studies (History of Independence & Contemporary Issues)|3.0|60
-AOL101|Art of Living|3.0|60
-STA101|Statistics and Probability|3.0|60
-ACT327|Financial and Managerial Accounting|3.0|60
-ECO426|Engineering Economics|3.0|60
-CSE498|FYDP/Capstone Project (Phase I)|3.0|60
-CSE499|FYDP/Capstone Project (Phase-II)|3.0|60
-CSE431|Machine Learning|3.0|60
-CSE432|Natural Language Processing|3.0|60
-CSE433|Artificial Neural Networks|3.0|60
-CSE434|Pattern Recognition|3.0|60
-CSE435|Soft Computing|3.0|60
-CSE436|Digital Image Processing|3.0|60
-CSE437|Computer Vision|3.0|60
-CSE438|Business Intelligence|3.0|60
-CSE441|UI and UX Design|3.0|60
-CSE442|Software Quality Assurance|3.0|60
-CSE443|Web Computing|3.0|60
-CSE444|Software Architecture and Design Pattern|3.0|60
-CSE445|Intellectual Property and Contract Law|3.0|60
-CSE446|Mobile Applications Development|3.0|60
-CSE447|Concurrent and Distributed Programming|3.0|60
-CSE448|Virtual Reality and 3D Games|3.0|60
-CSE451|Cloud Computing and Services|3.0|60
-CSE452|Optical Fiber Communication|3.0|60
-CSE453|Wireless Sensor Network|3.0|60
-CSE454|Cyber Security and Forensics|3.0|60
-CSE455|High Performance Computing|3.0|60
-CSE456|Network Programming|3.0|60
-CSE457|Wireless and Cellular Communication|3.0|60
-CSE461|Algorithm Engineering|3.0|60
-CSE462|Computational Complexity|3.0|60
-CSE463|Advanced Algorithms|3.0|60
-CSE464|Basic Graph Theory|3.0|60
-CSE465|Algorithmic Game Theory|3.0|60
-CSE466|Bioinformatics Algorithm|3.0|60
-CSE467|Algorithm for distributed computation|3.0|60
-CSE471|Introduction to Embedded Systems|3.0|60
-CSE472|Internet of Things (IoT)|3.0|60
-CSE473|Robotics|3.0|60
-CSE474|VLSI Design|3.0|60
-CSE475|Micro-sensors|3.0|60
-CSE476|Sensor Manufacturing and Process Control|3.0|60
-CSE477|Introduction to Nanotechnology and Nanodevices|3.0|60
-CSE478|Additive Manufacturing Engineering|3.0|60
+CSE112|Computer Fundamentals|3.0|1
+CSE113|Programming and Problem Solving|3.0|1
+CSE114|Programming and Problem-Solving Lab|1.5|1
+CSE115|Introduction to Biology & Chemistry for Computation|3.0|2
+CSE121|Electrical Circuits|3.0|2
+CSE122|Electrical Circuits Lab|1.5|2
+CSE123|Data Structure|3.0|3
+CSE124|Data Structure Lab|1.5|3
+CSE212|Discrete Mathematics|3.0|3
+CSE213|Algorithms|3.0|4
+CSE214|Algorithms Lab|1.5|4
+CSE215|Electronic Devices and Circuits|3.0|4
+CSE216|Electronic Devices and Circuits Lab|1.5|4
+CSE221|Object Oriented Programming|3.0|4
+CSE222|Object Oriented Programming Lab|1.5|4
+CSE223|Digital Logic Design|3.0|5
+CSE224|Digital Logic Design Lab|1.5|5
+CSE225|Data Communication|3.0|5
+CSE226|Numerical Methods|3.0|5
+CSE227|Systems Analysis and Design|3.0|5
+CSE228|Theory of Computation|3.0|5
+CSE311|Database Management System|3.0|6
+CSE312|Database Management System Lab|1.5|6
+CSE313|Compiler Design|3.0|6
+CSE314|Compiler Design Lab|1.5|6
+CSE315|Software Engineering|3.0|6
+CSE316|Artificial Intelligence|3.0|6
+CSE317|Microprocessor and Microcontrollers|3.0|6
+CSE321|Computer Networks|3.0|7
+CSE322|Computer Networks Lab|1.5|7
+CSE323|Operating Systems|3.0|7
+CSE324|Operating Systems Lab|1.5|7
+CSE325|Instrumentation and Control|3.0|7
+CSE326|Social and Professional Issues in Computing|3.0|7
+CSE411|Computer Graphics|3.0|8
+CSE412|Computer Graphics Lab|1.5|8
+CSE413|Computer Architecture and Organization|3.0|8
+ENG101|Basic Functional English and English Spoken|3.0|1
+ENG102|Writing and Comprehension|3.0|2
+MAT101|Mathematics-I|3.0|1
+MAT102|Mathematics-II: Calculus, Complex Variables & Linear Algebra|3.0|2
+MAT211|Engineering Mathematics|3.0|3
+PHY101|Physics-I|3.0|1
+PHY102|Physics-II|3.0|2
+PHY103|Physics-II Lab|1.5|2
+BNS101|Bangladesh Studies (History of Independence & Contemporary Issues)|3.0|1
+AOL101|Art of Living|3.0|1
+STA101|Statistics and Probability|3.0|3
+ACT327|Financial and Managerial Accounting|3.0|7
+ECO426|Engineering Economics|3.0|7
+CSE498|FYDP/Capstone Project (Phase I)|3.0|8
+CSE499|FYDP/Capstone Project (Phase-II)|3.0|12
+CSE431|Machine Learning|3.0|8
+CSE432|Natural Language Processing|3.0|8
+CSE433|Artificial Neural Networks|3.0|8
+CSE434|Pattern Recognition|3.0|9
+CSE435|Soft Computing|3.0|9
+CSE436|Digital Image Processing|3.0|9
+CSE437|Computer Vision|3.0|9
+CSE438|Business Intelligence|3.0|9
+CSE441|UI and UX Design|3.0|9
+CSE442|Software Quality Assurance|3.0|9
+CSE443|Web Computing|3.0|9
+CSE444|Software Architecture and Design Pattern|3.0|10
+CSE445|Intellectual Property and Contract Law|3.0|10
+CSE446|Mobile Applications Development|3.0|10
+CSE447|Concurrent and Distributed Programming|3.0|10
+CSE448|Virtual Reality and 3D Games|3.0|10
+CSE451|Cloud Computing and Services|3.0|10
+CSE452|Optical Fiber Communication|3.0|10
+CSE453|Wireless Sensor Network|3.0|10
+CSE454|Cyber Security and Forensics|3.0|11
+CSE455|High Performance Computing|3.0|11
+CSE456|Network Programming|3.0|11
+CSE457|Wireless and Cellular Communication|3.0|11
+CSE461|Algorithm Engineering|3.0|11
+CSE462|Computational Complexity|3.0|11
+CSE463|Advanced Algorithms|3.0|11
+CSE464|Basic Graph Theory|3.0|11
+CSE465|Algorithmic Game Theory|3.0|12
+CSE466|Bioinformatics Algorithm|3.0|12
+CSE467|Algorithm for distributed computation|3.0|12
+CSE471|Introduction to Embedded Systems|3.0|12
+CSE472|Internet of Things (IoT)|3.0|12
+CSE473|Robotics|3.0|12
+CSE474|VLSI Design|3.0|12
+CSE475|Micro-sensors|3.0|12
+CSE476|Sensor Manufacturing and Process Control|3.0|12
+CSE477|Introduction to Nanotechnology and Nanodevices|3.0|12
+CSE478|Additive Manufacturing Engineering|3.0|12

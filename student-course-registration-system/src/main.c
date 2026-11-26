@@ -30,6 +30,7 @@ typedef struct Student
     char name[101];
     int batch;
     char section[21];
+    int currentSemester;
     char email[101];
     char phone[21];
     char advisorID[51];
@@ -111,6 +112,7 @@ int main()
     loadRegistrations();
     loadWaitlists();
     loadHistory();
+    loadRegistrationRequests();
     loadSectionRequests();
     int choice;
 
@@ -149,6 +151,7 @@ int main()
             freeRegistrations();
             freeWaitlists();
             freeHistory();
+            freeRegistrationRequests();
             freeSectionRequests();
             printf("\nThank you for using DIU Course Registration System!\n");
             return 0;
@@ -239,17 +242,18 @@ void loadStudents()
             fclose(fp);
             return;
         }
-        int result = fscanf(fp, "%20[^|]|%100[^|]|%d|%20[^|]|%100[^|]|%20[^|]|%50[^|]|%100[^\n]\n",
+        int result = fscanf(fp, "%20[^|]|%100[^|]|%d|%20[^|]|%d|%100[^|]|%20[^|]|%50[^|]|%100[^\n]\n",
                             newStudent->studentID,
                             newStudent->name,
                             &newStudent->batch,
                             newStudent->section,
+                            &newStudent->currentSemester,
                             newStudent->email,
                             newStudent->phone,
                             newStudent->advisorID,
                             newStudent->password);
 
-        if (result != 8)
+        if (result != 9)
         {
             free(newStudent);
             break;
@@ -574,6 +578,7 @@ void addStudent()
         if (countStudentsInSection(newStudent->batch, newStudent->section) >= sec->capacity)
         { printError("Section is full."); free(newStudent); return; }
     }
+    newStudent->currentSemester = readIntRange("Enter Current Semester (1-12): ", 1, 12);
     readToken("Enter Email: ", newStudent->email, 100);
     readToken("Enter Phone: ", newStudent->phone, 20);
     newStudent->advisorID[0] = '\0';
@@ -629,6 +634,7 @@ void updateStudent()
         printf("3. Update Section\n");
         printf("4. Update Email\n");
         printf("5. Update Phone\n");
+        printf("6. Update Current Semester\n");
         // printf("7. Update Advisor ID\n");
         printf("0. Finish Updating\n");
 
@@ -673,6 +679,11 @@ void updateStudent()
         case 5:
             readToken("Enter New Phone: ", temp->phone, 20);
             printf("\n[SUCCESS] Phone updated successfully!\n");
+            break;
+
+        case 6:
+            temp->currentSemester = readIntRange("Enter New Current Semester (1-12): ", 1, 12);
+            printSuccess("Current semester updated successfully!");
             break;
 
             // case 7:
@@ -737,26 +748,50 @@ void deleteStudent()
             rn = r->nxt;
             if (strcmp(r->studentID, searchID) == 0)
             {
-                char code[21];
+                char code[21], section[21];
                 int wasRegistered = (strcmp(r->status, "REGISTERED") == 0);
                 strcpy(code, r->courseCode);
+                strcpy(section, r->section);
                 if (strcmp(r->status, "WAITING") == 0)
                 {
                     WaitQueue *q = waitQueueHead;
-                    while (q != NULL) { if (strcmp(q->courseCode, r->courseCode)==0){ WaitNode *wn=q->front,*wp=NULL; while(wn){ if(strcmp(wn->studentID,searchID)==0){ if(wp) wp->nxt=wn->nxt; else q->front=wn->nxt; if(q->rear==wn) q->rear=wp; free(wn); break;} wp=wn; wn=wn->nxt;} break;} q=q->nxt; }
+                    while (q != NULL && !(strcmp(q->courseCode, r->courseCode) == 0 &&
+                                          strcmp(q->section, r->section) == 0)) q = q->nxt;
+                    if (q != NULL)
+                    {
+                        WaitNode *wn = q->front, *wp = NULL;
+                        while (wn != NULL)
+                        {
+                            if (strcmp(wn->studentID, searchID) == 0)
+                            {
+                                if (wp != NULL) wp->nxt = wn->nxt; else q->front = wn->nxt;
+                                if (q->rear == wn) q->rear = wp;
+                                free(wn);
+                                break;
+                            }
+                            wp = wn;
+                            wn = wn->nxt;
+                        }
+                    }
                 }
                 if (rp != NULL) rp->nxt = rn; else registrationHead = rn;
+                pushHistory(searchID, "DROP", code, section);
                 free(r);
                 if (wasRegistered)
                 {
                     char nextID[21];
-                    if (dequeueWait(code, nextID))
+                    if (dequeueWait(code, section, nextID))
                     {
                         Registration *wr = registrationHead;
                         while (wr != NULL)
                         {
-                            if (strcmp(wr->studentID,nextID)==0 && strcmp(wr->courseCode,code)==0 && strcmp(wr->status,"WAITING")==0)
-                            { strcpy(wr->status,"REGISTERED"); pushHistory(nextID,"PROMOTED",code); break; }
+                            if (strcmp(wr->studentID, nextID) == 0 && strcmp(wr->courseCode, code) == 0 &&
+                                strcmp(wr->section, section) == 0 && strcmp(wr->status, "WAITING") == 0)
+                            {
+                                strcpy(wr->status, "REGISTERED");
+                                pushHistory(nextID, "PROMOTED", code, section);
+                                break;
+                            }
                             wr = wr->nxt;
                         }
                     }
@@ -767,6 +802,20 @@ void deleteStudent()
         }
         saveHistory();
         {
+            RegistrationRequest *rr = registrationRequestHead, *rpReq = NULL, *rnReq;
+            while (rr != NULL)
+            {
+                rnReq = rr->nxt;
+                if (strcmp(rr->studentID, searchID) == 0)
+                {
+                    if (rpReq != NULL) rpReq->nxt = rnReq; else registrationRequestHead = rnReq;
+                    free(rr);
+                }
+                else rpReq = rr;
+                rr = rnReq;
+            }
+        }
+        {
             SectionRequest *sr = sectionRequestHead, *sp = NULL, *sn;
             while (sr != NULL)
             {
@@ -776,7 +825,7 @@ void deleteStudent()
                 sr = sn;
             }
         }
-        saveRegistrations(); saveWaitlists(); saveSectionRequests();
+        saveRegistrations(); saveWaitlists(); saveRegistrationRequests(); saveSectionRequests();
         if (prev == NULL) studentHead = temp->nxt; else prev->nxt = temp->nxt;
         free(temp);
         printSuccess("Student deleted successfully!");
@@ -801,11 +850,12 @@ void saveStudents()
     Student *temp = studentHead;
     while (temp != NULL)
     {
-        fprintf(fp, "%s|%s|%d|%s|%s|%s|%s|%s\n",
+        fprintf(fp, "%s|%s|%d|%s|%d|%s|%s|%s|%s\n",
                 temp->studentID,
                 temp->name,
                 temp->batch,
                 temp->section,
+                temp->currentSemester,
                 temp->email,
                 temp->phone,
                 (temp->advisorID[0] == '\0') ? "-" : temp->advisorID,
@@ -1348,6 +1398,7 @@ void advisorPanel(char advisorID[])
         printf("2. View My Assigned Students\n");
         printf("3. Search Assigned Student\n");
         printf("4. View Student Registration\n");
+        printf("5. Manage Registration Requests\n");
         printf("0. Logout\n");
 
         choice = readInt("\nEnter your choice: ");
@@ -1412,6 +1463,10 @@ void advisorPanel(char advisorID[])
 
         case 4:
             viewStudentRegistrationForAdvisor(advisorID);
+            break;
+
+        case 5:
+            manageRegistrationRequestsForAdvisor(advisorID);
             break;
 
         case 0:
@@ -1502,13 +1557,14 @@ void studentPanel(char studentID[])
         printf("10. View Available Courses\n");
         printf("11. Search Course\n");
         printf("12. View Course Details\n");
-        printf("13. Register Course\n");
+        printf("13. Submit Registration Request\n");
         printf("14. Drop Course\n");
         printf("15. View Registered Courses\n");
         printf("16. View Total Credits\n");
         printf("17. View Waiting List Status\n");
         printf("18. View Registration History\n");
         printf("19. View Course Prerequisites\n");
+        printf("20. View Registration Request Status\n");
 
         printf("\n0. Logout\n");
 
@@ -1549,6 +1605,7 @@ void studentPanel(char studentID[])
         case 3:
             printf("\n--- My Batch & Section Information ---\n");
             printf("Batch: %d\n", temp->batch);
+            printf("Current Semester: %d\n", temp->currentSemester);
 
             if (temp->section[0] == '\0')
             {
@@ -1600,7 +1657,7 @@ void studentPanel(char studentID[])
             break;
 
         case 13:
-            registerCourseForStudent(studentID);
+            submitRegistrationRequest(studentID);
             break;
 
         case 14:
@@ -1625,6 +1682,10 @@ void studentPanel(char studentID[])
 
         case 19:
             viewCoursePrerequisites();
+            break;
+
+        case 20:
+            viewRegistrationRequestStatus(studentID);
             break;
 
         case 0:
@@ -1736,6 +1797,7 @@ void displayStudentDetails(Student *student)
     printf("Name: %s\n", student->name);
     printf("Batch: %d\n", student->batch);
     printf("Section: %s\n", student->section);
+    printf("Current Semester: %d\n", student->currentSemester);
     printf("Email: %s\n", student->email);
     printf("Phone: %s\n", student->phone);
     printf("Advisor ID: %s\n", student->advisorID);

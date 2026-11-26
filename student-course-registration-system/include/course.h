@@ -6,7 +6,7 @@ typedef struct Course
     char code[21];
     char name[101];
     float credits;
-    int capacity;
+    int semester;
     struct Course *nxt;
 } Course;
 
@@ -37,5 +37,6 @@ Course *findCourse(const char *code);
 int prereqExists(const char *courseCode, const char *prereqCode);
 int hasPrerequisitesSatisfied(const char *studentID, const char *courseCode);
 int countCourseWaitlist(const char *courseCode);
+int isCourseEligibleForSemester(const char *courseCode, int semester);
 
 #endif

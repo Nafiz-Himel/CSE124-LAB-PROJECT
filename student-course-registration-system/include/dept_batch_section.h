@@ -1,6 +1,8 @@
 #ifndef DEPT_BATCH_SECTION_H
 #define DEPT_BATCH_SECTION_H
 
+#define SECTION_CAPACITY 40
+
 typedef struct Batch
 {
     int batchYear;

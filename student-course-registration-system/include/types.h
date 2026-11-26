@@ -24,6 +24,7 @@ typedef struct Student
     char name[101];
     int batch;
     char section[21];
+    int currentSemester;
     char email[101];
     char phone[21];
     char advisorID[51];

@@ -171,7 +171,7 @@ void submitSectionPreferences(const char *studentID)
         t->nxt = r;
     }
     saveSectionRequests();
-    pushHistory(studentID, "SEC_REQ", pref);
+    pushHistory(studentID, "SEC_REQ", "-", pref);
     saveHistory();
     printSuccess("Section request submitted. Waiting for admin approval.");
 }
@@ -231,7 +231,7 @@ void respondToAlternativeSection(const char *studentID)
         strcpy(r->status, "APPROVED");
         saveStudents();
         saveSectionRequests();
-        pushHistory(studentID, "SEC_ALT_ACC", r->alternativeSection);
+        pushHistory(studentID, "SEC_ALT_ACC", "-", r->alternativeSection);
         saveHistory();
         printSuccess("Alternative section accepted and allocated.");
     }
@@ -239,7 +239,7 @@ void respondToAlternativeSection(const char *studentID)
     {
         strcpy(r->status, "REJECTED");
         saveSectionRequests();
-        pushHistory(studentID, "SEC_ALT_REJ", r->alternativeSection);
+        pushHistory(studentID, "SEC_ALT_REJ", "-", r->alternativeSection);
         saveHistory();
         printInfo("Alternative section rejected.");
     }
@@ -271,7 +271,7 @@ void requestSectionChange(const char *studentID)
     if (sectionRequestHead == NULL) sectionRequestHead = r;
     else { SectionRequest *t = sectionRequestHead; while (t->nxt != NULL) t = t->nxt; t->nxt = r; }
     saveSectionRequests();
-    pushHistory(studentID, "SEC_CHG_REQ", pref);
+    pushHistory(studentID, "SEC_CHG_REQ", "-", pref);
     saveHistory();
     printSuccess("Section change request submitted.");
 }
@@ -334,7 +334,7 @@ void manageSectionRequests()
             strcpy(r->status, "APPROVED");
             saveStudents();
             saveSectionRequests();
-            pushHistory(r->studentID, "SEC_APPROVE", r->preferredSection);
+            pushHistory(r->studentID, "SEC_APPROVE", "-", r->preferredSection);
             saveHistory();
             printSuccess("Section request approved.");
         }
@@ -348,7 +348,7 @@ void manageSectionRequests()
             if (strcmp(r->status, "PENDING") != 0 && strcmp(r->status, "ALT_OFFERED") != 0) { printError("Request is not active."); continue; }
             strcpy(r->status, "REJECTED");
             saveSectionRequests();
-            pushHistory(r->studentID, "SEC_REJECT", r->preferredSection);
+            pushHistory(r->studentID, "SEC_REJECT", "-", r->preferredSection);
             saveHistory();
             printSuccess("Section request rejected.");
         }
@@ -368,7 +368,7 @@ void manageSectionRequests()
             strcpy(r->alternativeSection, alt);
             strcpy(r->status, "ALT_OFFERED");
             saveSectionRequests();
-            pushHistory(r->studentID, "SEC_ALT", alt);
+            pushHistory(r->studentID, "SEC_ALT", "-", alt);
             saveHistory();
             printSuccess("Alternative section offered.");
         }

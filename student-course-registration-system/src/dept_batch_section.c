@@ -159,18 +159,17 @@ void manageBatches()
 void addSection()
 {
     char name[21];
-    int year, cap;
+    int year;
     Section *s;
     year = readInt("Enter Batch Year: ");
     if (findBatch(year) == NULL) { printError("Batch not found. Add batch first."); return; }
     readToken("Enter Section Name: ", name, 20);
     if (findSection(year, name) != NULL) { printError("Section already exists."); return; }
-    cap = readIntRange("Enter Capacity: ", 1, 500);
     s = malloc(sizeof(Section));
     if (s == NULL) { printError("Memory allocation failed."); return; }
     s->batchYear = year;
     strcpy(s->sectionName, name);
-    s->capacity = cap;
+    s->capacity = SECTION_CAPACITY;
     s->nxt = NULL;
     if (sectionHead == NULL) sectionHead = s; else { Section *t=sectionHead; while(t->nxt!=NULL) t=t->nxt; t->nxt=s; }
     saveSections();
