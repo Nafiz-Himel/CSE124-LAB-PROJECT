@@ -1,26 +1,34 @@
-# Compiled Object files
+﻿# Compiled/Object files
 *.o
 *.obj
 
-# Executable files (Compiled binary)
+# Executables
 *.exe
 *.out
 *.app
 
-# Dynamic Libraries
+# Libraries
 *.so
 *.dylib
 *.dll
 
-# IDE and Editor specific files
+# IDE/Editor
 .vscode/
 .idea/
 *.swp
 *~
 
-# Operating System files
+# OS
 .DS_Store
 Thumbs.db
 
-# Output / Log files
+# Logs
 *.log
+
+# student-course-registration-system outputs
+student-course-registration-system/bin/*
+!student-course-registration-system/bin/.gitkeep
+student-course-registration-system/build/*
+!student-course-registration-system/build/.gitkeep
+student-course-registration-system/reports/*
+!student-course-registration-system/reports/.gitkeep

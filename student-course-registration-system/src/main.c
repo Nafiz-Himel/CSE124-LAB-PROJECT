@@ -2,6 +2,11 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include "../include/reports.h"
+#include "../include/dept_batch_section.h"
+#include "../include/course.h"
+#include "../include/registration.h"
+
 #define ADMIN 1
 #define ADVISOR 2
 #define STUDENT 3
@@ -70,6 +75,8 @@ void advisorPanel(char advisorID[]);
 void viewMyAssignedStudents(char advisorID[]);
 
 void studentPanel(char studentID[]);
+Student *findStudentByID(const char studentID[]);
+Advisor *findAdvisorByID(const char advisorID[]);
 
 void viewAllStudents();
 void searchStudent();
@@ -93,6 +100,14 @@ int main()
     loadAdmins();
     loadStudents();
     loadAdvisors();
+    loadDepartments();
+    loadBatches();
+    loadSections();
+    loadCourses();
+    loadPrerequisites();
+    loadRegistrations();
+    loadWaitlists();
+    loadHistory();
     int choice;
 
     while (1)
@@ -124,6 +139,14 @@ int main()
             freeAdmins();
             freeStudents();
             freeAdvisors();
+            freeDepartments();
+            freeBatches();
+            freeSections();
+            freeCourses();
+            freePrerequisites();
+            freeRegistrations();
+            freeWaitlists();
+            freeHistory();
             printf("\nThank you for using DIU Course Registration System!\n");
             return 0;
 
@@ -139,7 +162,7 @@ int main()
 //Load Persistent Records from Text Files into Singly Linked Lists (Admin, Student, Advisor)
 void loadAdmins()
 {
-    FILE *fp = fopen("admins.txt", "r");
+    FILE *fp = fopen("data/admins.txt", "r");
 
     if (fp == NULL)
     {
@@ -195,7 +218,7 @@ void loadAdmins()
 
 void loadStudents()
 {
-    FILE *fp = fopen("students.txt", "r");
+    FILE *fp = fopen("data/students.txt", "r");
 
     if (fp == NULL)
     {
@@ -254,7 +277,7 @@ void loadStudents()
 
 void loadAdvisors()
 {
-    FILE *fp = fopen("advisors.txt", "r");
+    FILE *fp = fopen("data/advisors.txt", "r");
 
     if (fp == NULL)
     {
@@ -523,27 +546,27 @@ void adminPanel()
             break;
 
         case 15:
-            printf("\nDepartment Management feature is coming soon!\n");
+            manageDepartments();
             break;
 
         case 16:
-            printf("\nBatch Management feature is coming soon!\n");
+            manageBatches();
             break;
 
         case 17:
-            printf("\nSection Management feature is coming soon!\n");
+            manageSections();
             break;
 
         case 18:
-            printf("\nCourse Management feature is coming soon!\n");
+            manageCourses();
             break;
 
         case 19:
-            printf("\nRegistration Management feature is coming soon!\n");
+            manageRegistration();
             break;
 
         case 20:
-            printf("\nReports feature is coming soon!\n");
+            viewReports();
             break;
 
         case 0:
@@ -796,7 +819,7 @@ void deleteStudent()
 
 void saveStudents()
 {
-    FILE *fp = fopen("students.txt", "w");
+    FILE *fp = fopen("data/students.txt", "w");
 
     if (fp == NULL)
     {
@@ -1107,7 +1130,7 @@ void deleteAdvisor()
 
 void saveAdvisors()
 {
-    FILE *fp = fopen("advisors.txt", "w");
+    FILE *fp = fopen("data/advisors.txt", "w");
 
     if (fp == NULL)
     {
@@ -1454,7 +1477,7 @@ void advisorPanel(char advisorID[])
         }
 
         case 4:
-            printf("\n[INFO] Student registration feature is under development.\n");
+            viewStudentRegistrationForAdvisor();
             break;
 
         case 0:
@@ -1605,23 +1628,111 @@ void studentPanel(char studentID[])
             }
             break;
 
+        case 4:
+            viewAvailableSectionsForStudent(studentID);
+            break;
+
+        case 5:
+            submitSectionPreferences(studentID);
+            temp = findStudentByID(studentID);
+            break;
+
+        case 6:
+            viewSectionRequestStatus(studentID);
+            break;
+
+        case 7:
+            respondToAlternativeSection(studentID);
+            temp = findStudentByID(studentID);
+            break;
+
+        case 8:
+            requestSectionChange(studentID);
+            temp = findStudentByID(studentID);
+            break;
+
+        case 9:
+            viewSectionChangeStatus(studentID);
+            break;
+
+        case 10:
+            viewAvailableCourses();
+            break;
+
+        case 11:
+            searchCourse();
+            break;
+
+        case 12:
+            viewCourseDetails();
+            break;
+
+        case 13:
+            registerCourseForStudent(studentID);
+            break;
+
+        case 14:
+            dropCourseForStudent(studentID);
+            break;
+
+        case 15:
+            viewRegisteredCoursesForStudent(studentID);
+            break;
+
+        case 16:
+            viewTotalCreditsForStudent(studentID);
+            break;
+
+        case 17:
+            viewWaitingListStatusForStudent(studentID);
+            break;
+
+        case 18:
+            viewRegistrationHistoryForStudent(studentID);
+            break;
+
+        case 19:
+            viewCoursePrerequisites();
+            break;
+
         case 0:
             printf("\nLogging out from Student Panel...\n");
             return;
 
         default:
-            if (choice >= 4 && choice <= 19)
-            {
-                printf("\n[INFO] This feature is under development.\n");
-            }
-            else
-            {
-                printf("\n[ERROR] Invalid choice! Please try again.\n");
-            }
+            printf("\n[ERROR] Invalid choice! Please try again.\n");
         }
     }
 }
 
+
+Student *findStudentByID(const char studentID[])
+{
+    Student *temp = studentHead;
+    while (temp != NULL)
+    {
+        if (strcmp(temp->studentID, studentID) == 0)
+        {
+            return temp;
+        }
+        temp = temp->nxt;
+    }
+    return NULL;
+}
+
+Advisor *findAdvisorByID(const char advisorID[])
+{
+    Advisor *temp = advisorHead;
+    while (temp != NULL)
+    {
+        if (strcmp(temp->advisorID, advisorID) == 0)
+        {
+            return temp;
+        }
+        temp = temp->nxt;
+    }
+    return NULL;
+}
 
 // COMMON FUNCTIONS (Admin & Advisor)
 void viewAllStudents()
