@@ -5,7 +5,6 @@ typedef struct SectionRequest
 {
     char requestID[21];
     char studentID[21];
-    char department[21];
     int batch;
     char preferredSection[21];
     char alternativeSection[21];

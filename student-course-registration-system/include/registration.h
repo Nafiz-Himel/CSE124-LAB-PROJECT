@@ -56,7 +56,7 @@ void viewTotalCreditsForStudent(const char *studentID);
 void viewWaitingListStatusForStudent(const char *studentID);
 void viewRegistrationHistoryForStudent(const char *studentID);
 
-int countRegisteredCredits(const char *studentID);
+float countRegisteredCredits(const char *studentID);
 int countCourseRegistrations(const char *courseCode);
 int isStudentRegistered(const char *studentID, const char *courseCode);
 void pushHistory(const char *studentID, const char *action, const char *courseCode);

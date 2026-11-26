@@ -5,8 +5,7 @@ typedef struct Course
 {
     char code[21];
     char name[101];
-    char department[21];
-    int credits;
+    float credits;
     int capacity;
     struct Course *nxt;
 } Course;

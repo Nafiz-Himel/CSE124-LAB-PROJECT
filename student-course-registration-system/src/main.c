@@ -28,7 +28,6 @@ typedef struct Student
 {
     char studentID[21];
     char name[101];
-    char department[21];
     int batch;
     char section[21];
     char email[101];
@@ -42,7 +41,6 @@ typedef struct Advisor
 {
     char advisorID[51];
     char name[101];
-    char department[21];
     char email[101];
     char phone[21];
     char password[101];
@@ -106,7 +104,6 @@ int main()
     loadAdmins();
     loadStudents();
     loadAdvisors();
-    loadDepartments();
     loadBatches();
     loadSections();
     loadCourses();
@@ -145,7 +142,6 @@ int main()
             freeAdmins();
             freeStudents();
             freeAdvisors();
-            freeDepartments();
             freeBatches();
             freeSections();
             freeCourses();
@@ -243,10 +239,9 @@ void loadStudents()
             fclose(fp);
             return;
         }
-        int result = fscanf(fp, "%20[^|]|%100[^|]|%20[^|]|%d|%20[^|]|%100[^|]|%20[^|]|%50[^|]|%100[^\n]\n",
+        int result = fscanf(fp, "%20[^|]|%100[^|]|%d|%20[^|]|%100[^|]|%20[^|]|%50[^|]|%100[^\n]\n",
                             newStudent->studentID,
                             newStudent->name,
-                            newStudent->department,
                             &newStudent->batch,
                             newStudent->section,
                             newStudent->email,
@@ -254,7 +249,7 @@ void loadStudents()
                             newStudent->advisorID,
                             newStudent->password);
 
-        if (result != 9)
+        if (result != 8)
         {
             free(newStudent);
             break;
@@ -303,15 +298,14 @@ void loadAdvisors()
             return;
         }
 
-        int result = fscanf(fp, "%50[^|]|%100[^|]|%20[^|]|%100[^|]|%20[^|]|%100[^\n]\n",
+        int result = fscanf(fp, "%50[^|]|%100[^|]|%100[^|]|%20[^|]|%100[^\n]\n",
                             newAdvisor->advisorID,
                             newAdvisor->name,
-                            newAdvisor->department,
                             newAdvisor->email,
                             newAdvisor->phone,
                             newAdvisor->password);
 
-        if (result != 6)
+        if (result != 5)
         {
             free(newAdvisor);
             break;
@@ -457,11 +451,11 @@ void adminPanel()
         printf("\n---------- ADVISOR MANAGEMENT ----------\n");
         printf("6. Add Advisor\n7. View All Advisors\n8. Search Advisor\n9. Update Advisor\n10. Delete Advisor\n");
         printf("11. Assign Student to Advisor\n12. View Advisor's Assigned Students\n13. View Advisor Workload\n14. View Unassigned Students\n");
-        printf("\n---------- DEPARTMENT & BATCH ----------\n15. Manage Departments\n16. Manage Batches\n");
-        printf("\n---------- SECTION MANAGEMENT ----------\n17. Manage Sections\n18. Manage Section Requests\n");
-        printf("\n---------- COURSE MANAGEMENT ----------\n19. Manage Courses\n");
-        printf("\n---------- REGISTRATION MANAGEMENT ----------\n20. Manage Registration\n");
-        printf("\n---------- REPORTS ----------\n21. View Reports\n");
+        printf("\n---------- BATCH MANAGEMENT ----------\n15. Manage Batches\n");
+        printf("\n---------- SECTION MANAGEMENT ----------\n16. Manage Sections\n17. Manage Section Requests\n");
+        printf("\n---------- COURSE MANAGEMENT ----------\n18. Manage Courses\n");
+        printf("\n---------- REGISTRATION MANAGEMENT ----------\n19. Manage Registration\n");
+        printf("\n---------- REPORTS ----------\n20. View Reports\n");
         printf("\n0. Logout\n");
         choice = readInt("\nEnter your choice: ");
 
@@ -524,30 +518,26 @@ void adminPanel()
             break;
 
         case 15:
-            manageDepartments();
-            break;
-
-        case 16:
             manageBatches();
             break;
 
-        case 17:
+        case 16:
             manageSections();
             break;
 
-        case 18:
+        case 17:
             manageSectionRequests();
             break;
 
-        case 19:
+        case 18:
             manageCourses();
             break;
 
-        case 20:
+        case 19:
             manageRegistration();
             break;
 
-        case 21:
+        case 20:
             viewReports();
             break;
 
@@ -573,17 +563,15 @@ void addStudent()
     if (newStudent == NULL) { printError("Memory allocation failed!"); return; }
     strcpy(newStudent->studentID, newStudentID);
     readLine("Enter Student Name: ", newStudent->name, sizeof(newStudent->name));
-    readToken("Enter Department: ", newStudent->department, 20);
-    if (findDepartment(newStudent->department) == NULL) { printError("Department not found. Add department first."); free(newStudent); return; }
     newStudent->batch = readInt("Enter Batch: ");
-    if (findBatch(newStudent->department, newStudent->batch) == NULL) { printError("Batch not found for department."); free(newStudent); return; }
+    if (findBatch(newStudent->batch) == NULL) { printError("Batch not found."); free(newStudent); return; }
     readToken("Enter Section (or - for none): ", newStudent->section, 20);
     if (strcmp(newStudent->section, "-") == 0) newStudent->section[0] = '\0';
     if (newStudent->section[0] != '\0')
     {
-        Section *sec = findSection(newStudent->department, newStudent->batch, newStudent->section);
-        if (sec == NULL) { printError("Section not found for department/batch."); free(newStudent); return; }
-        if (countStudentsInSection(newStudent->department, newStudent->batch, newStudent->section) >= sec->capacity)
+        Section *sec = findSection(newStudent->batch, newStudent->section);
+        if (sec == NULL) { printError("Section not found for batch."); free(newStudent); return; }
+        if (countStudentsInSection(newStudent->batch, newStudent->section) >= sec->capacity)
         { printError("Section is full."); free(newStudent); return; }
     }
     readToken("Enter Email: ", newStudent->email, 100);
@@ -637,11 +625,10 @@ void updateStudent()
     {
         printf("\n========== Update Menu ==========\n");
         printf("1. Update Name\n");
-        printf("2. Update Department\n");
-        printf("3. Update Batch\n");
-        printf("4. Update Section\n");
-        printf("5. Update Email\n");
-        printf("6. Update Phone\n");
+        printf("2. Update Batch\n");
+        printf("3. Update Section\n");
+        printf("4. Update Email\n");
+        printf("5. Update Phone\n");
         // printf("7. Update Advisor ID\n");
         printf("0. Finish Updating\n");
 
@@ -656,45 +643,34 @@ void updateStudent()
 
         case 2:
         {
-            char dept[21];
-            readToken("Enter New Department: ", dept, 20);
-            if (findDepartment(dept) == NULL) { printError("Department not found."); break; }
-            strcpy(temp->department, dept);
-            temp->section[0] = '\0';
-            temp->advisorID[0] = '\0';
-            printSuccess("Department updated. Section/advisor cleared; reassign as needed.");
-            break;
-        }
-        case 3:
-        {
             int batch = readInt("Enter New Batch: ");
-            if (findBatch(temp->department, batch) == NULL) { printError("Batch not found for department."); break; }
+            if (findBatch(batch) == NULL) { printError("Batch not found."); break; }
             temp->batch = batch;
             temp->section[0] = '\0';
             printSuccess("Batch updated. Section cleared; reassign as needed.");
             break;
         }
-        case 4:
+        case 3:
         {
             char secName[21];
             readToken("Enter New Section (- to clear): ", secName, 20);
             if (strcmp(secName, "-") == 0) { temp->section[0] = '\0'; printSuccess("Section cleared."); break; }
             {
-                Section *sec = findSection(temp->department, temp->batch, secName);
-                if (sec == NULL) { printError("Section not found for department/batch."); break; }
-                if (countStudentsInSection(temp->department, temp->batch, secName) >= sec->capacity) { printError("Section is full."); break; }
+                Section *sec = findSection(temp->batch, secName);
+                if (sec == NULL) { printError("Section not found for batch."); break; }
+                if (countStudentsInSection(temp->batch, secName) >= sec->capacity) { printError("Section is full."); break; }
                 strcpy(temp->section, secName);
             }
             printSuccess("Section updated successfully!");
             break;
         }
 
-        case 5:
+        case 4:
             readToken("Enter New Email: ", temp->email, 100);
             printf("\n[SUCCESS] Email updated successfully!\n");
             break;
 
-        case 6:
+        case 5:
             readToken("Enter New Phone: ", temp->phone, 20);
             printf("\n[SUCCESS] Phone updated successfully!\n");
             break;
@@ -825,10 +801,9 @@ void saveStudents()
     Student *temp = studentHead;
     while (temp != NULL)
     {
-        fprintf(fp, "%s|%s|%s|%d|%s|%s|%s|%s|%s\n",
+        fprintf(fp, "%s|%s|%d|%s|%s|%s|%s|%s\n",
                 temp->studentID,
                 temp->name,
-                temp->department,
                 temp->batch,
                 temp->section,
                 temp->email,
@@ -876,8 +851,6 @@ void addAdvisor()
 
     printf("Enter Advisor Name: ");
     readLine("Enter Advisor Name: ", newAdvisor->name, sizeof(newAdvisor->name));
-    printf("Enter Department: ");
-    readToken("Enter Department: ", newAdvisor->department, 20);
     printf("Enter Email: ");
     readToken("Enter Email: ", newAdvisor->email, 100);
     printf("Enter Phone: ");
@@ -994,10 +967,9 @@ void updateAdvisor()
     {
         printf("\n========== Update Advisor Information ==========\n");
         printf("1. Update Name\n");
-        printf("2. Update Department\n");
-        printf("3. Update Email\n");
-        printf("4. Update Phone\n");
-        printf("5. Update Password\n");
+        printf("2. Update Email\n");
+        printf("3. Update Phone\n");
+        printf("4. Update Password\n");
         printf("0. Finish Updating\n");
 
         choice = readInt("\nEnter your choice: ");
@@ -1010,21 +982,16 @@ void updateAdvisor()
             break;
 
         case 2:
-            readToken("Enter New Department: ", temp->department, 20);
-            printf("\n[SUCCESS] Department updated successfully!\n");
-            break;
-
-        case 3:
             readToken("Enter New Email: ", temp->email, 100);
             printf("\n[SUCCESS] Email updated successfully!\n");
             break;
 
-        case 4:
+        case 3:
             readToken("Enter New Phone: ", temp->phone, 20);
             printf("\n[SUCCESS] Phone updated successfully!\n");
             break;
 
-        case 5:
+        case 4:
             readToken("Enter New Password: ", temp->password, 100);
             printf("\n[SUCCESS] Password updated successfully!\n");
             break;
@@ -1122,10 +1089,9 @@ void saveAdvisors()
     Advisor *temp = advisorHead;
     while (temp != NULL)
     {
-        fprintf(fp, "%s|%s|%s|%s|%s|%s\n",
+        fprintf(fp, "%s|%s|%s|%s|%s\n",
                 temp->advisorID,
                 temp->name,
-                temp->department,
                 temp->email,
                 temp->phone,
                 temp->password);
@@ -1195,13 +1161,6 @@ void assignStudentToAdvisor()
     }
     printf("\n[SUCCESS] Advisor found!\n");
     displayAdvisorDetails(advisorTemp);
-
-    if (strcmp(studentTemp->department, advisorTemp->department) != 0)
-    {
-        printf("\n[ERROR] Department mismatch!\n");
-        printf("Student and advisor must belong to the same department.\n");
-        return;
-    }
 
     if (studentTemp->advisorID[0] != '\0')
     {
@@ -1309,7 +1268,6 @@ void viewAdvisorWorkload()
 
         printf("\nAdvisor ID: %s\n", advisorTemp->advisorID);
         printf("Advisor Name: %s\n", advisorTemp->name);
-        printf("Department: %s\n", advisorTemp->department);
         printf("Assigned Students: %d\n", studentCount);
         printf("-------------------------------------\n");
 
@@ -1590,7 +1548,6 @@ void studentPanel(char studentID[])
 
         case 3:
             printf("\n--- My Batch & Section Information ---\n");
-            printf("Department: %s\n", temp->department);
             printf("Batch: %d\n", temp->batch);
 
             if (temp->section[0] == '\0')
@@ -1777,7 +1734,6 @@ void displayStudentDetails(Student *student)
 {
     printf("Student ID: %s\n", student->studentID);
     printf("Name: %s\n", student->name);
-    printf("Department: %s\n", student->department);
     printf("Batch: %d\n", student->batch);
     printf("Section: %s\n", student->section);
     printf("Email: %s\n", student->email);
@@ -1791,7 +1747,6 @@ void displayAdvisorDetails(Advisor *advisor)
 {
     printf("Advisor ID: %s\n", advisor->advisorID);
     printf("Name: %s\n", advisor->name);
-    printf("Department: %s\n", advisor->department);
     printf("Email: %s\n", advisor->email);
     printf("Phone: %s\n", advisor->phone);
 

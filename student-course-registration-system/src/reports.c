@@ -101,7 +101,7 @@ void reportSystemSummary()
             if (strcmp(s->advisorID, ad->advisorID) == 0) count++;
             s = s->nxt;
         }
-        snprintf(buf, sizeof(buf), "%s | %s | Dept: %s | Students: %d\n", ad->advisorID, ad->name, ad->department, count);
+        snprintf(buf, sizeof(buf), "%s | %s | Students: %d\n", ad->advisorID, ad->name, count);
         out(fp, buf);
         ad = ad->nxt;
     }
@@ -115,47 +115,19 @@ void reportAllStudents()
     Student *s = studentHead;
     int count = 0;
     if (!fp) return;
-    snprintf(buf, sizeof(buf), "%-12s %-20s %-8s %-6s %-8s %-10s\n", "ID", "Name", "Dept", "Batch", "Section", "Advisor");
+    snprintf(buf, sizeof(buf), "%-12s %-20s %-6s %-8s %-10s\n", "ID", "Name", "Batch", "Section", "Advisor");
     out(fp, buf);
     printLine(); if (fp) fprintf(fp, "------------------------------------------------------------\n");
     while (s)
     {
-        snprintf(buf, sizeof(buf), "%-12s %-20.20s %-8s %-6d %-8s %-10s\n",
-                 s->studentID, s->name, s->department, s->batch, s->section,
+        snprintf(buf, sizeof(buf), "%-12s %-20.20s %-6d %-8s %-10s\n",
+                 s->studentID, s->name, s->batch, s->section,
                  s->advisorID[0] == '\0' ? "-" : s->advisorID);
         out(fp, buf);
         count++;
         s = s->nxt;
     }
     snprintf(buf, sizeof(buf), "Total Students: %d\n", count); out(fp, buf);
-    closeReport(fp);
-}
-
-void reportStudentsByDepartment()
-{
-    char dept[21];
-    char buf[512];
-    Student *s;
-    int count = 0;
-    FILE *fp;
-    printf("Enter Department (or ALL): ");
-    readToken("Enter Department Code: ", dept, 20);
-    fp = openReport("STUDENTS BY DEPARTMENT REPORT");
-    if (!fp) return;
-    snprintf(buf, sizeof(buf), "Filter: %s\n", dept); out(fp, buf);
-    printLine(); if (fp) fprintf(fp, "------------------------------------------------------------\n");
-    s = studentHead;
-    while (s)
-    {
-        if (strcmp(dept, "ALL") == 0 || strcmp(s->department, dept) == 0)
-        {
-            snprintf(buf, sizeof(buf), "%-12s %-20.20s %-8s %-6d %-8s\n", s->studentID, s->name, s->department, s->batch, s->section);
-            out(fp, buf);
-            count++;
-        }
-        s = s->nxt;
-    }
-    snprintf(buf, sizeof(buf), "Total: %d\n", count); out(fp, buf);
     closeReport(fp);
 }
 
@@ -182,7 +154,7 @@ void reportStudentsByBatchSection()
         int sectionOk = (strcmp(section, "ALL") == 0 || strcmp(s->section, section) == 0);
         if (batchOk && sectionOk)
         {
-            snprintf(buf, sizeof(buf), "%-12s %-20.20s %-8s %-6d %-8s\n", s->studentID, s->name, s->department, s->batch, s->section);
+            snprintf(buf, sizeof(buf), "%-12s %-20.20s %-6d %-8s\n", s->studentID, s->name, s->batch, s->section);
             out(fp, buf);
             count++;
         }
@@ -208,7 +180,7 @@ void reportAdvisorWorkload()
             if (strcmp(s->advisorID, ad->advisorID) == 0) count++;
             s = s->nxt;
         }
-        snprintf(buf, sizeof(buf), "%-10s %-20.20s %-8s Assigned: %d\n", ad->advisorID, ad->name, ad->department, count);
+        snprintf(buf, sizeof(buf), "%-10s %-20.20s Assigned: %d\n", ad->advisorID, ad->name, count);
         out(fp, buf);
         if (minLoad == -1 || count < minLoad) minLoad = count;
         if (count > maxLoad) maxLoad = count;
@@ -235,7 +207,7 @@ void reportUnassignedStudents()
     {
         if (s->advisorID[0] == '\0')
         {
-            snprintf(buf, sizeof(buf), "%-12s %-20.20s %-8s %-6d\n", s->studentID, s->name, s->department, s->batch);
+            snprintf(buf, sizeof(buf), "%-12s %-20.20s %-6d\n", s->studentID, s->name, s->batch);
             out(fp, buf);
             count++;
         }
@@ -259,14 +231,14 @@ void reportAdvisorDetail()
     fp = openReport("ADVISOR DETAIL REPORT");
     if (!fp) return;
     if (!ad) { out(fp, "Advisor not found.\n"); closeReport(fp); return; }
-    snprintf(buf, sizeof(buf), "Advisor: %s (%s), Dept: %s\n", ad->advisorID, ad->name, ad->department); out(fp, buf);
+    snprintf(buf, sizeof(buf), "Advisor: %s (%s)\n", ad->advisorID, ad->name); out(fp, buf);
     printLine(); if (fp) fprintf(fp, "------------------------------------------------------------\n");
     s = studentHead;
     while (s)
     {
         if (strcmp(s->advisorID, advisorID) == 0)
         {
-            snprintf(buf, sizeof(buf), "%-12s %-20.20s %-8s %-6d %-8s\n", s->studentID, s->name, s->department, s->batch, s->section);
+            snprintf(buf, sizeof(buf), "%-12s %-20.20s %-6d %-8s\n", s->studentID, s->name, s->batch, s->section);
             out(fp, buf);
             count++;
         }
@@ -293,11 +265,6 @@ void reportDataIntegrity()
             if (!found)
             {
                 snprintf(buf, sizeof(buf), "[ISSUE] Student %s has orphan advisor ID: %s\n", s->studentID, s->advisorID);
-                out(fp, buf); issues++;
-            }
-            else if (strcmp(ad->department, s->department) != 0)
-            {
-                snprintf(buf, sizeof(buf), "[ISSUE] Dept mismatch: Student %s (%s) - Advisor %s (%s)\n", s->studentID, s->department, ad->advisorID, ad->department);
                 out(fp, buf); issues++;
             }
         }
@@ -351,7 +318,7 @@ void reportCourseRegistrationSummary()
             }
             r = r->nxt;
         }
-        snprintf(buf, sizeof(buf), "%-10s %-20.20s Dept:%-6s Cr:%d Cap:%d Reg:%d Wait:%d\n", c->code, c->name, c->department, c->credits, c->capacity, enrolled, waiting);
+        snprintf(buf, sizeof(buf), "%-10s %-20.20s Cr:%.1f Cap:%d Reg:%d Wait:%d\n", c->code, c->name, c->credits, c->capacity, enrolled, waiting);
         out(fp, buf);
         courseCount++;
         c = c->nxt;
@@ -381,8 +348,8 @@ void reportSectionSummary()
     out(fp, "Sections:\n");
     while (s != NULL)
     {
-        int filled = countStudentsInSection(s->departmentCode, s->batchYear, s->sectionName);
-        snprintf(buf, sizeof(buf), "%s | %d | %s | Cap:%d | Filled:%d\n", s->departmentCode, s->batchYear, s->sectionName, s->capacity, filled);
+        int filled = countStudentsInSection(s->batchYear, s->sectionName);
+        snprintf(buf, sizeof(buf), "%d | %s | Cap:%d | Filled:%d\n", s->batchYear, s->sectionName, s->capacity, filled);
         out(fp, buf);
         secCount++; s = s->nxt;
     }
@@ -425,16 +392,15 @@ void viewReports()
         printf("\n========== REPORTS MENU ==========\n");
         printf("1. System Summary\n");
         printf("2. All Students\n");
-        printf("3. Students by Department\n");
-        printf("4. Students by Batch/Section\n");
-        printf("5. Advisor Workload\n");
-        printf("6. Unassigned Students\n");
-        printf("7. Advisor Detail\n");
-        printf("8. Data Integrity\n");
-        printf("9. Course/Registration Summary\n");
-        printf("10. Section & Request Summary\n");
-        printf("11. Registration History\n");
-        printf("12. Export Last Report\n");
+        printf("3. Students by Batch/Section\n");
+        printf("4. Advisor Workload\n");
+        printf("5. Unassigned Students\n");
+        printf("6. Advisor Detail\n");
+        printf("7. Data Integrity\n");
+        printf("8. Course/Registration Summary\n");
+        printf("9. Section & Request Summary\n");
+        printf("10. Registration History\n");
+        printf("11. Export Last Report\n");
         printf("0. Back\n");
         choice = readInt("Enter choice: ");
 
@@ -442,16 +408,15 @@ void viewReports()
         {
         case 1: reportSystemSummary(); break;
         case 2: reportAllStudents(); break;
-        case 3: reportStudentsByDepartment(); break;
-        case 4: reportStudentsByBatchSection(); break;
-        case 5: reportAdvisorWorkload(); break;
-        case 6: reportUnassignedStudents(); break;
-        case 7: reportAdvisorDetail(); break;
-        case 8: reportDataIntegrity(); break;
-        case 9: reportCourseRegistrationSummary(); break;
-        case 10: reportSectionSummary(); break;
-        case 11: reportRegistrationHistory(); break;
-        case 12:
+        case 3: reportStudentsByBatchSection(); break;
+        case 4: reportAdvisorWorkload(); break;
+        case 5: reportUnassignedStudents(); break;
+        case 6: reportAdvisorDetail(); break;
+        case 7: reportDataIntegrity(); break;
+        case 8: reportCourseRegistrationSummary(); break;
+        case 9: reportSectionSummary(); break;
+        case 10: reportRegistrationHistory(); break;
+        case 11:
         {
             char name[101];
             readLine("Enter export file name (without .txt): ", name, sizeof(name));

@@ -22,7 +22,6 @@ typedef struct Student
 {
     char studentID[21];
     char name[101];
-    char department[21];
     int batch;
     char section[21];
     char email[101];
@@ -36,7 +35,6 @@ typedef struct Advisor
 {
     char advisorID[51];
     char name[101];
-    char department[21];
     char email[101];
     char phone[21];
     char password[101];

@@ -51,6 +51,38 @@ int readIntRange(const char *prompt, int min, int max)
     }
 }
 
+float readFloat(const char *prompt)
+{
+    float value;
+    int result;
+    while (1)
+    {
+        printf("%s", prompt);
+        result = scanf("%f", &value);
+        if (result == 1)
+        {
+            clearInputBuffer();
+            return value;
+        }
+        clearInputBuffer();
+        printf("\n[ERROR] Invalid number. Please try again.\n");
+    }
+}
+
+float readFloatRange(const char *prompt, float min, float max)
+{
+    float value;
+    while (1)
+    {
+        value = readFloat(prompt);
+        if (value >= min && value <= max)
+        {
+            return value;
+        }
+        printf("\n[ERROR] Please enter a value between %.1f and %.1f.\n", min, max);
+    }
+}
+
 void readToken(const char *prompt, char *buffer, int width)
 {
     char format[16];

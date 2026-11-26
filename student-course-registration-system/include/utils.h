@@ -6,6 +6,8 @@
 void clearInputBuffer();
 int readInt(const char *prompt);
 int readIntRange(const char *prompt, int min, int max);
+float readFloat(const char *prompt);
+float readFloatRange(const char *prompt, float min, float max);
 void readToken(const char *prompt, char *buffer, int width);
 void readLine(const char *prompt, char *buffer, int size);
 int confirmYesNo(const char *prompt);

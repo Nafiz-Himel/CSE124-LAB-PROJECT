@@ -1,3 +1,12 @@
-ADV001|Demo Name 1|CSE|demo1.cse@diu.edu.bd|01000000001|advisor001
-ADV002|Demo Name 2|CSE|demo2.cse@diu.edu.bd|01000000002|advisor002
-ADV003|Demo Name 3|CSE|demo3.cse@diu.edu.bd|01000000003|advisor003
+ADV001|Demo Advisor 1|adv001.cse@diu.edu.bd|01000000001|advisor001
+ADV002|Demo Advisor 2|adv002.cse@diu.edu.bd|01000000002|advisor002
+ADV003|Demo Advisor 3|adv003.cse@diu.edu.bd|01000000003|advisor003
+ADV004|Demo Advisor 4|adv004.cse@diu.edu.bd|01000000004|advisor004
+ADV005|Demo Advisor 5|adv005.cse@diu.edu.bd|01000000005|advisor005
+ADV006|Demo Advisor 6|adv006.cse@diu.edu.bd|01000000006|advisor006
+ADV007|Demo Advisor 7|adv007.cse@diu.edu.bd|01000000007|advisor007
+ADV008|Demo Advisor 8|adv008.cse@diu.edu.bd|01000000008|advisor008
+ADV009|Demo Advisor 9|adv009.cse@diu.edu.bd|01000000009|advisor009
+ADV010|Demo Advisor 10|adv010.cse@diu.edu.bd|01000000010|advisor010
+ADV011|Demo Advisor 11|adv011.cse@diu.edu.bd|01000000011|advisor011
+ADV012|Demo Advisor 12|adv012.cse@diu.edu.bd|01000000012|advisor012

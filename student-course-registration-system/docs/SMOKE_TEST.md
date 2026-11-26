@@ -5,7 +5,7 @@ Build:
 
 Admin:
 - Login admin/admin123
-- Manage Departments/Batches/Sections: add, view, delete guarded by dependencies
+- Manage Batches/Sections: add, view, delete guarded by dependencies
 - Add Course/Prerequisite, view, delete guarded by registrations/waitlist
 - Manage Section Requests: view pending, approve/reject/offer alternative
 - Manage Registration: register/drop/view/waitlists

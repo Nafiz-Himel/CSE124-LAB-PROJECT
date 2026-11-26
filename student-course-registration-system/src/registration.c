@@ -1,7 +1,6 @@
 #include "../include/registration.h"
 #include "../include/types.h"
 #include "../include/course.h"
-#include "../include/dept_batch_section.h"
 #include "../include/utils.h"
 
 Registration *registrationHead = NULL;
@@ -76,9 +75,9 @@ int isStudentRegistered(const char *studentID, const char *courseCode)
     return 0;
 }
 
-int countRegisteredCredits(const char *studentID)
+float countRegisteredCredits(const char *studentID)
 {
-    Registration *r = registrationHead; int total = 0;
+    Registration *r = registrationHead; float total = 0.0f;
     while (r)
     {
         if (strcmp(r->studentID, studentID) == 0 && strcmp(r->status, "REGISTERED") == 0)
@@ -200,10 +199,9 @@ void registerCourseForStudent(const char *studentID)
     readToken("Enter Course Code: ", code, 20);
     c = findCourse(code);
     if (c == NULL) { printError("Course not found."); return; }
-    if (strcmp(c->department, s->department) != 0) { printError("Course department mismatch."); return; }
     if (isStudentRegistered(studentID, code)) { printError("Already registered or waiting for this course."); return; }
     if (!hasPrerequisitesSatisfied(studentID, code)) { printError("Prerequisites not satisfied."); return; }
-    if (countRegisteredCredits(studentID) + c->credits > 18) { printError("Credit limit exceeded (max 18)."); return; }
+    if (countRegisteredCredits(studentID) + c->credits > 18.0f) { printError("Credit limit exceeded (max 18)."); return; }
 
     r = malloc(sizeof(Registration));
     if (r == NULL) { printError("Memory allocation failed."); return; }
@@ -318,7 +316,7 @@ void viewRegisteredCoursesForStudent(const char *studentID)
 
 void viewTotalCreditsForStudent(const char *studentID)
 {
-    printf("\nTotal Registered Credits: %d / 18\n", countRegisteredCredits(studentID));
+    printf("\nTotal Registered Credits: %.1f / 18\n", countRegisteredCredits(studentID));
 }
 
 void viewWaitingListStatusForStudent(const char *studentID)

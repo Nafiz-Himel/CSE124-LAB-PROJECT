@@ -1,17 +1,17 @@
 # Student Course Registration System
 
-CSE124 - Data Structure Lab project: a console-based Student Course Registration System in C.
+CSE124 - Data Structure Lab project: a console-based course registration system in C for CSE department students only.
 
 ## Implemented Modules
 - Role-based login (Admin/Student/Advisor)
-- Department / Batch / Section management (LL, TXT persistence)
+- Batch / Section management (LL, TXT persistence)
 - Course & prerequisite management (LL, dependency guards)
 - Registration, waitlist, and history (LL + Queue FIFO + Stack LIFO)
 - Section request workflow (submit, approve/reject/alternative, change request)
 - Reports and export (`reports/last_report.txt`, named export)
 
 ## Data Structures
-- **Singly Linked List**: admins, students, advisors, departments, batches, sections, courses, prerequisites, registrations, section requests
+- **Singly Linked List**: admins, students, advisors, batches, sections, courses, prerequisites, registrations, section requests
 - **Queue (FIFO)**: per-course waitlist
 - **Stack (LIFO)**: registration/section action history
 
@@ -31,7 +31,7 @@ Run from `student-course-registration-system` so relative `data/` and `reports/`
 
 ## Data Files
 - `data/admins.txt`, `data/students.txt`, `data/advisors.txt`
-- `data/departments.txt`, `data/batches.txt`, `data/sections.txt`
+- `data/batches.txt`, `data/sections.txt`
 - `data/courses.txt`, `data/prerequisites.txt`
 - `data/registrations.txt`, `data/waitlists.txt`, `data/history.txt`
 - `data/section_requests.txt`

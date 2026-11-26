@@ -44,9 +44,9 @@ void loadSectionRequests()
     {
         r = malloc(sizeof(SectionRequest));
         if (r == NULL) { fclose(fp); return; }
-        if (fscanf(fp, "%20[^|]|%20[^|]|%20[^|]|%d|%20[^|]|%20[^|]|%20[^\n]\n",
-                   r->requestID, r->studentID, r->department, &r->batch,
-                   r->preferredSection, r->alternativeSection, r->status) != 7)
+        if (fscanf(fp, "%20[^|]|%20[^|]|%d|%20[^|]|%20[^|]|%20[^\n]\n",
+                   r->requestID, r->studentID, &r->batch,
+                   r->preferredSection, r->alternativeSection, r->status) != 6)
         {
             free(r);
             break;
@@ -71,8 +71,8 @@ void saveSectionRequests()
     if (fp == NULL) { printError("Unable to save section requests."); return; }
     while (t != NULL)
     {
-        fprintf(fp, "%s|%s|%s|%d|%s|%s|%s\n",
-                t->requestID, t->studentID, t->department, t->batch,
+        fprintf(fp, "%s|%s|%d|%s|%s|%s\n",
+                t->requestID, t->studentID, t->batch,
                 t->preferredSection,
                 t->alternativeSection[0] == '\0' ? "-" : t->alternativeSection,
                 t->status);
@@ -99,20 +99,20 @@ void viewAvailableSectionsForStudent(const char *studentID)
     int found = 0;
     while (s != NULL && strcmp(s->studentID, studentID) != 0) s = s->nxt;
     if (s == NULL) { printError("Student not found."); return; }
-    printf("\n--- Available Sections for %s Batch %d ---\n", s->department, s->batch);
+    printf("\n--- Available Sections for Batch %d ---\n", s->batch);
     sec = sectionHead;
     while (sec != NULL)
     {
-        if (strcmp(sec->departmentCode, s->department) == 0 && sec->batchYear == s->batch)
+        if (sec->batchYear == s->batch)
         {
-            int filled = countStudentsInSection(sec->departmentCode, sec->batchYear, sec->sectionName);
+            int filled = countStudentsInSection(sec->batchYear, sec->sectionName);
             printf("Section: %s | Capacity: %d | Filled: %d | Available: %d\n",
                    sec->sectionName, sec->capacity, filled, sec->capacity - filled);
             found = 1;
         }
         sec = sec->nxt;
     }
-    if (!found) printInfo("No sections found for your department/batch.");
+    if (!found) printInfo("No sections found for your batch.");
 }
 
 int nextSectionRequestSeq(const char *prefix)
@@ -152,13 +152,12 @@ void submitSectionPreferences(const char *studentID)
     }
     viewAvailableSectionsForStudent(studentID);
     readToken("Enter preferred section name: ", pref, 20);
-    sec = findSection(s->department, s->batch, pref);
-    if (sec == NULL) { printError("Section not found for your department/batch."); return; }
+    sec = findSection(s->batch, pref);
+    if (sec == NULL) { printError("Section not found for your batch."); return; }
     r = malloc(sizeof(SectionRequest));
     if (r == NULL) { printError("Memory allocation failed."); return; }
     snprintf(r->requestID, sizeof(r->requestID), "SR%04d", nextSectionRequestSeq("SR"));
     strcpy(r->studentID, studentID);
-    strcpy(r->department, s->department);
     r->batch = s->batch;
     strcpy(r->preferredSection, pref);
     r->alternativeSection[0] = '\0';
@@ -216,14 +215,14 @@ void respondToAlternativeSection(const char *studentID)
     if (confirmYesNo("Accept alternative section? (Y/N): "))
     {
         Student *s = studentHead;
-        Section *sec = findSection(r->department, r->batch, r->alternativeSection);
+        Section *sec = findSection(r->batch, r->alternativeSection);
         while (s != NULL && strcmp(s->studentID, studentID) != 0) s = s->nxt;
         if (s == NULL || sec == NULL)
         {
             printError("Unable to process alternative section.");
             return;
         }
-        if (countStudentsInSection(r->department, r->batch, r->alternativeSection) >= sec->capacity)
+        if (countStudentsInSection(r->batch, r->alternativeSection) >= sec->capacity)
         {
             printError("Alternative section is now full.");
             return;
@@ -259,12 +258,11 @@ void requestSectionChange(const char *studentID)
     viewAvailableSectionsForStudent(studentID);
     readToken("Enter requested new section: ", pref, 20);
     if (strcmp(pref, s->section) == 0) { printError("Requested section is same as current section."); return; }
-    if (findSection(s->department, s->batch, pref) == NULL) { printError("Section not found."); return; }
+    if (findSection(s->batch, pref) == NULL) { printError("Section not found."); return; }
     r = malloc(sizeof(SectionRequest));
     if (r == NULL) { printError("Memory allocation failed."); return; }
     snprintf(r->requestID, sizeof(r->requestID), "SC%04d", nextSectionRequestSeq("SC"));
     strcpy(r->studentID, studentID);
-    strcpy(r->department, s->department);
     r->batch = s->batch;
     strcpy(r->preferredSection, pref);
     r->alternativeSection[0] = '\0';
@@ -304,7 +302,7 @@ void manageSectionRequests()
             {
                 if (strcmp(r->status, "PENDING") == 0 || strcmp(r->status, "ALT_OFFERED") == 0)
                 {
-                    printf("%s | %s | %s %d | Pref:%s | Alt:%s | %s\n", r->requestID, r->studentID, r->department, r->batch,
+                    printf("%s | %s | Batch %d | Pref:%s | Alt:%s | %s\n", r->requestID, r->studentID, r->batch,
                            r->preferredSection, r->alternativeSection[0] == '\0' ? "-" : r->alternativeSection, r->status);
                     found = 1;
                 }
@@ -322,9 +320,9 @@ void manageSectionRequests()
             r = findSectionRequestByID(reqID);
             if (r == NULL) { printError("Request not found."); continue; }
             if (strcmp(r->status, "PENDING") != 0) { printError("Request is not pending."); continue; }
-            sec = findSection(r->department, r->batch, r->preferredSection);
+            sec = findSection(r->batch, r->preferredSection);
             if (sec == NULL) { printError("Preferred section no longer exists."); continue; }
-            if (countStudentsInSection(r->department, r->batch, r->preferredSection) >= sec->capacity)
+            if (countStudentsInSection(r->batch, r->preferredSection) >= sec->capacity)
             {
                 printError("Preferred section is full. Offer alternative instead.");
                 continue;
@@ -364,9 +362,9 @@ void manageSectionRequests()
             if (r == NULL) { printError("Request not found."); continue; }
             if (strcmp(r->status, "PENDING") != 0) { printError("Request is not pending."); continue; }
             readToken("Enter alternative section: ", alt, 20);
-            sec = findSection(r->department, r->batch, alt);
+            sec = findSection(r->batch, alt);
             if (sec == NULL) { printError("Alternative section not found."); continue; }
-            if (countStudentsInSection(r->department, r->batch, alt) >= sec->capacity) { printError("Alternative section is full."); continue; }
+            if (countStudentsInSection(r->batch, alt) >= sec->capacity) { printError("Alternative section is full."); continue; }
             strcpy(r->alternativeSection, alt);
             strcpy(r->status, "ALT_OFFERED");
             saveSectionRequests();
