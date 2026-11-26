@@ -2,6 +2,7 @@
 #include "../include/types.h"
 #include "../include/course.h"
 #include "../include/dept_batch_section.h"
+#include "../include/utils.h"
 
 Registration *registrationHead = NULL;
 WaitQueue *waitQueueHead = NULL;
@@ -171,127 +172,130 @@ void freeWaitlists()
     WaitQueue *q; while (waitQueueHead) { q=waitQueueHead; waitQueueHead=waitQueueHead->nxt; WaitNode *n; while(q->front){n=q->front;q->front=n->nxt;free(n);} free(q);} }
 void freeHistory() { HistoryNode *t; while (historyTop) { t=historyTop; historyTop=historyTop->nxt; free(t); } }
 
-void viewAvailableSectionsForStudent(const char *studentID)
+int countCourseWaitlist(const char *courseCode)
 {
-    Student *s = studentHead; Section *sec;
-    while (s && strcmp(s->studentID, studentID)!=0) s=s->nxt;
-    if (!s) { printf("\n[ERROR] Student not found.\n"); return; }
-    printf("\n--- Available Sections for %s %d ---\n", s->department, s->batch);
-    sec = sectionHead;
-    while (sec)
+    WaitQueue *q = waitQueueHead;
+    int count = 0;
+    while (q != NULL)
     {
-        if (strcmp(sec->departmentCode, s->department)==0 && sec->batchYear==s->batch)
+        if (strcmp(q->courseCode, courseCode) == 0)
         {
-            int filled = countStudentsInSection(sec->departmentCode, sec->batchYear, sec->sectionName);
-            printf("Section: %s | Capacity: %d | Filled: %d | Available: %d\n", sec->sectionName, sec->capacity, filled, sec->capacity-filled);
+            WaitNode *n = q->front;
+            while (n != NULL) { count++; n = n->nxt; }
+            return count;
         }
-        sec = sec->nxt;
+        q = q->nxt;
     }
+    return count;
 }
-
-void submitSectionPreferences(const char *studentID)
-{
-    Student *s = studentHead; char pref[21]; Section *sec;
-    while (s && strcmp(s->studentID, studentID)!=0) s=s->nxt;
-    if (!s) return;
-    printf("Enter preferred section name: "); scanf("%20s", pref);
-    sec = findSection(s->department, s->batch, pref);
-    if (!sec) { printf("\n[ERROR] Section not found.\n"); return; }
-    if (countStudentsInSection(s->department, s->batch, pref) >= sec->capacity) { printf("\n[ERROR] Section full. Try another.\n"); return; }
-    strcpy(s->section, pref);
-    saveStudents();
-    pushHistory(studentID, "SECTION_SET", pref); saveHistory();
-    printf("\n[SUCCESS] Section allocated.\n");
-}
-
-void viewSectionRequestStatus(const char *studentID)
-{
-    Student *s = studentHead;
-    while (s && strcmp(s->studentID, studentID)!=0) s=s->nxt;
-    if (!s) return;
-    printf("\nSection: %s\n", s->section[0]=='\0'?"Not allocated":"Allocated");
-}
-
-void respondToAlternativeSection(const char *studentID)
-{
-    (void)studentID;
-    printf("\n[INFO] No alternative section request pending.\n");
-}
-void requestSectionChange(const char *studentID) { submitSectionPreferences(studentID); }
-void viewSectionChangeStatus(const char *studentID) { viewSectionRequestStatus(studentID); }
 
 void registerCourseForStudent(const char *studentID)
 {
-    char code[21]; Course *c; Registration *r;
+    char code[21];
+    Course *c;
+    Registration *r;
     Student *s = studentHead;
-    while (s && strcmp(s->studentID, studentID)!=0) s=s->nxt;
-    if (!s) { printf("\n[ERROR] Student not found.\n"); return; }
-    printf("Enter Course Code: "); scanf("%20s", code);
+    while (s != NULL && strcmp(s->studentID, studentID) != 0) s = s->nxt;
+    if (s == NULL) { printError("Student not found."); return; }
+    readToken("Enter Course Code: ", code, 20);
     c = findCourse(code);
-    if (!c) { printf("\n[ERROR] Course not found.\n"); return; }
-    if (strcmp(c->department, s->department)!=0) { printf("\n[ERROR] Course department mismatch.\n"); return; }
-    if (isStudentRegistered(studentID, code)) { printf("\n[ERROR] Already registered or waiting.\n"); return; }
-    if (!hasPrerequisitesSatisfied(studentID, code)) { printf("\n[ERROR] Prerequisites not satisfied.\n"); return; }
-    if (countRegisteredCredits(studentID) + c->credits > 18) { printf("\n[ERROR] Credit limit exceeded (max 18).\n"); return; }
+    if (c == NULL) { printError("Course not found."); return; }
+    if (strcmp(c->department, s->department) != 0) { printError("Course department mismatch."); return; }
+    if (isStudentRegistered(studentID, code)) { printError("Already registered or waiting for this course."); return; }
+    if (!hasPrerequisitesSatisfied(studentID, code)) { printError("Prerequisites not satisfied."); return; }
+    if (countRegisteredCredits(studentID) + c->credits > 18) { printError("Credit limit exceeded (max 18)."); return; }
 
-    r = malloc(sizeof(Registration)); if (!r) return;
-    strcpy(r->studentID, studentID); strcpy(r->courseCode, code);
+    r = malloc(sizeof(Registration));
+    if (r == NULL) { printError("Memory allocation failed."); return; }
+    strcpy(r->studentID, studentID);
+    strcpy(r->courseCode, code);
     if (countCourseRegistrations(code) >= c->capacity)
     {
         strcpy(r->status, "WAITING");
         enqueueWait(code, studentID);
         saveWaitlists();
-        printf("\n[INFO] Course full. Added to waiting list.\n");
+        printInfo("Course full. Added to waiting list.");
+        pushHistory(studentID, "WAIT", code);
     }
     else
     {
         strcpy(r->status, "REGISTERED");
-        printf("\n[SUCCESS] Course registered.\n");
+        printSuccess("Course registered.");
+        pushHistory(studentID, "REGISTER", code);
     }
     r->nxt = NULL;
-    if (!registrationHead) registrationHead = r; else { Registration *t=registrationHead; while(t->nxt) t=t->nxt; t->nxt=r; }
+    if (registrationHead == NULL) registrationHead = r;
+    else { Registration *t = registrationHead; while (t->nxt != NULL) t = t->nxt; t->nxt = r; }
     saveRegistrations();
-    pushHistory(studentID, r->status[0]=='W'?"WAIT":"REGISTER", code); saveHistory();
+    saveHistory();
 }
 
 void dropCourseForStudent(const char *studentID)
 {
-    char code[21]; Registration *r = registrationHead;
-    printf("Enter Course Code to drop: "); scanf("%20s", code);
-    while (r && !(strcmp(r->studentID,studentID)==0 && strcmp(r->courseCode,code)==0 && (strcmp(r->status,"REGISTERED")==0 || strcmp(r->status,"WAITING")==0)))
-    { r=r->nxt; }
-    if (!r) { printf("\n[ERROR] Active registration not found.\n"); return; }
-    if (strcmp(r->status, "WAITING")==0)
+    char code[21];
+    Registration *r = registrationHead;
+    int wasRegistered = 0;
+    readToken("Enter Course Code to drop: ", code, 20);
+    while (r != NULL && !(strcmp(r->studentID, studentID) == 0 && strcmp(r->courseCode, code) == 0 &&
+           (strcmp(r->status, "REGISTERED") == 0 || strcmp(r->status, "WAITING") == 0)))
+    {
+        r = r->nxt;
+    }
+    if (r == NULL)
+    {
+        printError("Active registration not found.");
+        return;
+    }
+    wasRegistered = (strcmp(r->status, "REGISTERED") == 0);
+    if (strcmp(r->status, "WAITING") == 0)
     {
         WaitQueue *q = waitQueueHead;
-        while (q && strcmp(q->courseCode, code)!=0) q=q->nxt;
-        if (q)
+        while (q != NULL && strcmp(q->courseCode, code) != 0) q = q->nxt;
+        if (q != NULL)
         {
-            WaitNode *wn=q->front,*wp=NULL;
-            while (wn && strcmp(wn->studentID,studentID)!=0) { wp=wn; wn=wn->nxt; }
-            if (wn) { if (wp) wp->nxt=wn->nxt; else q->front=wn->nxt; if (q->rear==wn) q->rear=wp; free(wn); saveWaitlists(); }
+            WaitNode *wn = q->front;
+            WaitNode *wp = NULL;
+            while (wn != NULL && strcmp(wn->studentID, studentID) != 0)
+            {
+                wp = wn;
+                wn = wn->nxt;
+            }
+            if (wn != NULL)
+            {
+                if (wp != NULL) wp->nxt = wn->nxt;
+                else q->front = wn->nxt;
+                if (q->rear == wn) q->rear = wp;
+                free(wn);
+                saveWaitlists();
+            }
         }
     }
     strcpy(r->status, "DROPPED");
     saveRegistrations();
-    pushHistory(studentID, "DROP", code); saveHistory();
-    printf("\n[SUCCESS] Course dropped.\n");
+    pushHistory(studentID, "DROP", code);
+    saveHistory();
+    printSuccess("Course dropped.");
 
-    if (strcmp(r->status, "DROPPED")==0)
+    if (wasRegistered)
     {
         char nextID[21];
         if (dequeueWait(code, nextID))
         {
             Registration *wr = registrationHead;
-            while (wr)
+            while (wr != NULL)
             {
-                if (strcmp(wr->studentID,nextID)==0 && strcmp(wr->courseCode,code)==0 && strcmp(wr->status,"WAITING")==0)
-                { strcpy(wr->status,"REGISTERED"); break; }
+                if (strcmp(wr->studentID, nextID) == 0 && strcmp(wr->courseCode, code) == 0 && strcmp(wr->status, "WAITING") == 0)
+                {
+                    strcpy(wr->status, "REGISTERED");
+                    break;
+                }
                 wr = wr->nxt;
             }
-            saveRegistrations(); saveWaitlists();
-            pushHistory(nextID, "PROMOTED", code); saveHistory();
-            printf("\n[INFO] Waitlisted student %s promoted.\n", nextID);
+            saveRegistrations();
+            saveWaitlists();
+            pushHistory(nextID, "PROMOTED", code);
+            saveHistory();
+            printf("\n[INFO] Waitlisted student %s promoted to REGISTERED.\n", nextID);
         }
     }
 }
@@ -314,7 +318,7 @@ void viewRegisteredCoursesForStudent(const char *studentID)
 
 void viewTotalCreditsForStudent(const char *studentID)
 {
-    printf("\nTotal Registered Credits: %d\n", countRegisteredCredits(studentID));
+    printf("\nTotal Registered Credits: %d / 18\n", countRegisteredCredits(studentID));
 }
 
 void viewWaitingListStatusForStudent(const char *studentID)
@@ -329,7 +333,7 @@ void viewWaitingListStatusForStudent(const char *studentID)
         }
         r=r->nxt;
     }
-    if (!found) printf("No waiting list entries.\n");
+    if (!found) printInfo("No waiting list entries.");
 }
 
 void viewRegistrationHistoryForStudent(const char *studentID)
@@ -342,51 +346,70 @@ void viewRegistrationHistoryForStudent(const char *studentID)
         { printf("%s | %s\n", h->action, h->courseCode); found=1; }
         h = h->nxt;
     }
-    if (!found) printf("No history records.\n");
+    if (!found) printInfo("No history records.");
 }
 
-void viewStudentRegistrationForAdvisor()
+void viewStudentRegistrationForAdvisor(const char *advisorID)
 {
     char studentID[21];
-    printf("Enter Student ID: "); scanf("%20s", studentID);
+    Student *s;
+    readToken("Enter Student ID: ", studentID, 20);
+    s = studentHead;
+    while (s != NULL && strcmp(s->studentID, studentID) != 0) s = s->nxt;
+    if (s == NULL)
+    {
+        printError("Student not found.");
+        return;
+    }
+    if (strcmp(s->advisorID, advisorID) != 0)
+    {
+        printError("You can only view registration for your assigned students.");
+        return;
+    }
     viewRegisteredCoursesForStudent(studentID);
 }
 
 void manageRegistration()
 {
-    int c; char studentID[21];
+    int c;
+    char studentID[21];
     while (1)
     {
-        printf("\n--- Manage Registration ---\n1. View All Registrations\n2. Register Student to Course\n3. Drop Student from Course\n4. View Waitlists\n0. Back\nChoice: ");
-        if (scanf("%d", &c) != 1) { int ch; while ((ch=getchar())!='\n'&&ch!=EOF){} continue; }
-        if (c==1)
+        printf("\n--- Manage Registration ---\n");
+        printf("1. View All Registrations\n2. Register Student to Course\n3. Drop Student from Course\n4. View Waitlists\n0. Back\n");
+        c = readInt("Choice: ");
+        if (c == 1)
         {
             Registration *r = registrationHead;
-            if (!r) printf("\nNo registrations.\n");
-            while (r) { printf("%s | %s | %s\n", r->studentID, r->courseCode, r->status); r=r->nxt; }
+            if (r == NULL) printInfo("No registrations.");
+            while (r != NULL) { printf("%s | %s | %s\n", r->studentID, r->courseCode, r->status); r = r->nxt; }
         }
-        else if (c==2)
+        else if (c == 2)
         {
-            printf("Enter Student ID: "); scanf("%20s", studentID);
+            readToken("Enter Student ID: ", studentID, 20);
+            if (!studentExists(studentID)) { printError("Student not found."); continue; }
             registerCourseForStudent(studentID);
         }
-        else if (c==3)
+        else if (c == 3)
         {
-            printf("Enter Student ID: "); scanf("%20s", studentID);
+            readToken("Enter Student ID: ", studentID, 20);
+            if (!studentExists(studentID)) { printError("Student not found."); continue; }
             dropCourseForStudent(studentID);
         }
-        else if (c==4)
+        else if (c == 4)
         {
             WaitQueue *q = waitQueueHead;
-            if (!q) printf("\nNo waitlists.\n");
-            while (q)
+            if (q == NULL) printInfo("No waitlists.");
+            while (q != NULL)
             {
-                WaitNode *n=q->front; int pos=1;
+                WaitNode *n = q->front;
+                int pos = 1;
                 printf("\nCourse %s:\n", q->courseCode);
-                while (n) { printf("  %d. %s\n", pos++, n->studentID); n=n->nxt; }
-                q=q->nxt;
+                while (n != NULL) { printf("  %d. %s\n", pos++, n->studentID); n = n->nxt; }
+                q = q->nxt;
             }
         }
-        else if (c==0) return;
+        else if (c == 0) return;
+        else printError("Invalid choice.");
     }
 }

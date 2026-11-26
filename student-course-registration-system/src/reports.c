@@ -3,6 +3,8 @@
 #include "../include/dept_batch_section.h"
 #include "../include/course.h"
 #include "../include/registration.h"
+#include "../include/section.h"
+#include "../include/utils.h"
 #ifdef _WIN32
 #include <direct.h>
 #define MKDIR(path) _mkdir(path)
@@ -20,25 +22,17 @@ void printLine()
 void exportReport(const char *name)
 {
     char filename[256];
-    FILE *src, *dst;
+    FILE *src;
+    FILE *dst;
     int ch;
+    if (name == NULL || name[0] == '\0') { printError("Invalid export name."); return; }
     snprintf(filename, sizeof(filename), "reports/%s.txt", name);
-    MKDIR("reports");
+    ensureReportsDir();
     src = fopen("reports/last_report.txt", "r");
-    if (src == NULL)
-    {
-        printf("\n[ERROR] No report generated yet.\n");
-        return;
-    }
+    if (src == NULL) { printError("No report generated yet."); return; }
     dst = fopen(filename, "w");
-    if (dst == NULL)
-    {
-        printf("\n[ERROR] Unable to export report.\n");
-        fclose(src);
-        return;
-    }
-    while ((ch = fgetc(src)) != EOF)
-        fputc(ch, dst);
+    if (dst == NULL) { printError("Unable to export report."); fclose(src); return; }
+    while ((ch = fgetc(src)) != EOF) fputc(ch, dst);
     fclose(src);
     fclose(dst);
     printf("\n[SUCCESS] Report exported to %s\n", filename);
@@ -145,7 +139,7 @@ void reportStudentsByDepartment()
     int count = 0;
     FILE *fp;
     printf("Enter Department (or ALL): ");
-    scanf("%20s", dept);
+    readToken("Enter Department Code: ", dept, 20);
     fp = openReport("STUDENTS BY DEPARTMENT REPORT");
     if (!fp) return;
     snprintf(buf, sizeof(buf), "Filter: %s\n", dept); out(fp, buf);
@@ -174,9 +168,9 @@ void reportStudentsByBatchSection()
     int count = 0;
     FILE *fp;
     printf("Enter Batch (0 for ALL): ");
-    scanf("%d", &batch);
+    batch = readInt("Enter Batch Year: ");
     printf("Enter Section (ALL for any): ");
-    scanf("%20s", section);
+    readToken("Enter Section: ", section, 20);
     fp = openReport("STUDENTS BY BATCH/SECTION REPORT");
     if (!fp) return;
     snprintf(buf, sizeof(buf), "Filter Batch: %d, Section: %s\n", batch, section); out(fp, buf);
@@ -260,7 +254,7 @@ void reportAdvisorDetail()
     int count = 0;
     FILE *fp;
     printf("Enter Advisor ID: ");
-    scanf("%50s", advisorID);
+    readToken("Enter Advisor ID: ", advisorID, 50);
     while (ad && strcmp(ad->advisorID, advisorID) != 0) ad = ad->nxt;
     fp = openReport("ADVISOR DETAIL REPORT");
     if (!fp) return;
@@ -340,28 +334,86 @@ void reportCourseRegistrationSummary()
     char buf[512];
     Course *c = courseHead;
     Registration *r = registrationHead;
-    int courseCount = 0, regCount = 0;
+    int courseCount = 0, regCount = 0, waitCount = 0, dropCount = 0;
     if (!fp) return;
-    if (c == NULL && r == NULL)
-    {
-        out(fp, "Course/Registration module data not available yet or empty.\n");
-        closeReport(fp);
-        return;
-    }
+    if (c == NULL && r == NULL) { out(fp, "No course/registration data found.\n"); closeReport(fp); return; }
     out(fp, "Courses:\n");
-    while (c)
+    while (c != NULL)
     {
-        int enrolled = 0;
+        int enrolled = 0, waiting = 0;
         r = registrationHead;
-        while (r) { if (strcmp(r->courseCode, c->code) == 0 && strcmp(r->status, "REGISTERED") == 0) enrolled++; r = r->nxt; }
-        snprintf(buf, sizeof(buf), "%-10s %-20.20s Dept:%-6s Credits:%d Cap:%d Enrolled:%d\n", c->code, c->name, c->department, c->credits, c->capacity, enrolled);
+        while (r != NULL)
+        {
+            if (strcmp(r->courseCode, c->code) == 0)
+            {
+                if (strcmp(r->status, "REGISTERED") == 0) enrolled++;
+                else if (strcmp(r->status, "WAITING") == 0) waiting++;
+            }
+            r = r->nxt;
+        }
+        snprintf(buf, sizeof(buf), "%-10s %-20.20s Dept:%-6s Cr:%d Cap:%d Reg:%d Wait:%d\n", c->code, c->name, c->department, c->credits, c->capacity, enrolled, waiting);
         out(fp, buf);
-        courseCount++; c = c->nxt;
+        courseCount++;
+        c = c->nxt;
     }
     r = registrationHead;
-    while (r) { regCount++; r = r->nxt; }
+    while (r != NULL)
+    {
+        regCount++;
+        if (strcmp(r->status, "WAITING") == 0) waitCount++;
+        if (strcmp(r->status, "DROPPED") == 0) dropCount++;
+        r = r->nxt;
+    }
     snprintf(buf, sizeof(buf), "Total Courses: %d\n", courseCount); out(fp, buf);
     snprintf(buf, sizeof(buf), "Total Registration Records: %d\n", regCount); out(fp, buf);
+    snprintf(buf, sizeof(buf), "Waiting Records: %d | Dropped Records: %d\n", waitCount, dropCount); out(fp, buf);
+    closeReport(fp);
+}
+
+void reportSectionSummary()
+{
+    FILE *fp = openReport("SECTION & REQUEST REPORT");
+    char buf[512];
+    Section *s = sectionHead;
+    SectionRequest *r = sectionRequestHead;
+    int secCount = 0, reqCount = 0, pending = 0;
+    if (!fp) return;
+    out(fp, "Sections:\n");
+    while (s != NULL)
+    {
+        int filled = countStudentsInSection(s->departmentCode, s->batchYear, s->sectionName);
+        snprintf(buf, sizeof(buf), "%s | %d | %s | Cap:%d | Filled:%d\n", s->departmentCode, s->batchYear, s->sectionName, s->capacity, filled);
+        out(fp, buf);
+        secCount++; s = s->nxt;
+    }
+    out(fp, "Section Requests:\n");
+    while (r != NULL)
+    {
+        snprintf(buf, sizeof(buf), "%s | %s | Pref:%s | Alt:%s | %s\n", r->requestID, r->studentID, r->preferredSection, r->alternativeSection[0]=='\0'?"-":r->alternativeSection, r->status);
+        out(fp, buf);
+        reqCount++; if (strcmp(r->status,"PENDING")==0 || strcmp(r->status,"ALT_OFFERED")==0) pending++;
+        r = r->nxt;
+    }
+    snprintf(buf, sizeof(buf), "Total Sections: %d | Total Requests: %d | Pending: %d\n", secCount, reqCount, pending);
+    out(fp, buf);
+    closeReport(fp);
+}
+
+void reportRegistrationHistory()
+{
+    FILE *fp = openReport("REGISTRATION HISTORY REPORT");
+    char buf[512];
+    HistoryNode *h = historyTop;
+    int count = 0;
+    if (!fp) return;
+    while (h != NULL)
+    {
+        snprintf(buf, sizeof(buf), "%s | %s | %s\n", h->studentID, h->action, h->courseCode);
+        out(fp, buf);
+        count++; h = h->nxt;
+    }
+    if (count == 0) out(fp, "No history records found.\n");
+    else { snprintf(buf, sizeof(buf), "Total History Records: %d\n", count); out(fp, buf); }
     closeReport(fp);
 }
 
@@ -380,10 +432,11 @@ void viewReports()
         printf("7. Advisor Detail\n");
         printf("8. Data Integrity\n");
         printf("9. Course/Registration Summary\n");
-        printf("10. Export Last Report\n");
+        printf("10. Section & Request Summary\n");
+        printf("11. Registration History\n");
+        printf("12. Export Last Report\n");
         printf("0. Back\n");
-        printf("Enter choice: ");
-        if (scanf("%d", &choice) != 1) { int ch; while ((ch = getchar()) != '\n' && ch != EOF) {} continue; }
+        choice = readInt("Enter choice: ");
 
         switch (choice)
         {
@@ -396,9 +449,17 @@ void viewReports()
         case 7: reportAdvisorDetail(); break;
         case 8: reportDataIntegrity(); break;
         case 9: reportCourseRegistrationSummary(); break;
-        case 10: exportReport("exported_report"); break;
+        case 10: reportSectionSummary(); break;
+        case 11: reportRegistrationHistory(); break;
+        case 12:
+        {
+            char name[101];
+            readLine("Enter export file name (without .txt): ", name, sizeof(name));
+            exportReport(name);
+            break;
+        }
         case 0: return;
-        default: printf("\n[ERROR] Invalid choice!\n");
+        default: printError("Invalid choice!");
         }
     }
 }

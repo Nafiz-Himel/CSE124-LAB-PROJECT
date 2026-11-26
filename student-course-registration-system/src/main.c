@@ -6,6 +6,8 @@
 #include "../include/dept_batch_section.h"
 #include "../include/course.h"
 #include "../include/registration.h"
+#include "../include/section.h"
+#include "../include/utils.h"
 
 #define ADMIN 1
 #define ADVISOR 2
@@ -75,8 +77,10 @@ void advisorPanel(char advisorID[]);
 void viewMyAssignedStudents(char advisorID[]);
 
 void studentPanel(char studentID[]);
-Student *findStudentByID(const char studentID[]);
-Advisor *findAdvisorByID(const char advisorID[]);
+Student *findStudentByID(const char *studentID);
+Advisor *findAdvisorByID(const char *advisorID);
+int studentExists(const char *studentID);
+int advisorExists(const char *advisorID);
 
 void viewAllStudents();
 void searchStudent();
@@ -97,6 +101,8 @@ Advisor *advisorHead = NULL;
 
 int main()
 {
+    ensureDataDir();
+    ensureReportsDir();
     loadAdmins();
     loadStudents();
     loadAdvisors();
@@ -108,6 +114,7 @@ int main()
     loadRegistrations();
     loadWaitlists();
     loadHistory();
+    loadSectionRequests();
     int choice;
 
     while (1)
@@ -121,8 +128,7 @@ int main()
         printf("3. Student Login\n");
         printf("0. Exit\n\n");
 
-        printf("Enter your choice: ");
-        scanf("%d", &choice);
+        choice = readInt("Enter your choice: ");
 
         switch (choice)
         {
@@ -147,6 +153,7 @@ int main()
             freeRegistrations();
             freeWaitlists();
             freeHistory();
+            freeSectionRequests();
             printf("\nThank you for using DIU Course Registration System!\n");
             return 0;
 
@@ -359,10 +366,8 @@ void login(int role)
     }
 
     printf("\n--- %s Login ---\n", roleName);
-    printf("Enter ID: ");
-    scanf("%100s", inputID);
-    printf("Enter Password: ");
-    scanf("%100s", inputPassword);
+    readToken("Enter ID: ", inputID, 100);
+    readToken("Enter Password: ", inputPassword, 100);
 
     if (role == ADMIN)
     {
@@ -447,45 +452,18 @@ void adminPanel()
     while (1)
     {
         printf("\n========== ADMIN PANEL ==========\n");
-
         printf("\n---------- STUDENT MANAGEMENT ----------\n");
-        printf("1. Add Student\n");
-        printf("2. View All Students\n");
-        printf("3. Search Student\n");
-        printf("4. Update Student\n");
-        printf("5. Delete Student\n");
-
+        printf("1. Add Student\n2. View All Students\n3. Search Student\n4. Update Student\n5. Delete Student\n");
         printf("\n---------- ADVISOR MANAGEMENT ----------\n");
-        printf("6. Add Advisor\n");
-        printf("7. View All Advisors\n");
-        printf("8. Search Advisor\n");
-        printf("9. Update Advisor\n");
-        printf("10. Delete Advisor\n");
-        printf("11. Assign Student to Advisor\n");
-        printf("12. View Advisor's Assigned Students\n");
-        printf("13. View Advisor Workload\n");
-        printf("14. View Unassigned Students\n");
-
-        printf("\n---------- DEPARTMENT & BATCH ----------\n");
-        printf("15. Manage Departments\n");
-        printf("16. Manage Batches\n");
-
-        printf("\n---------- SECTION MANAGEMENT ----------\n");
-        printf("17. Manage Sections\n");
-
-        printf("\n---------- COURSE MANAGEMENT ----------\n");
-        printf("18. Manage Courses\n");
-
-        printf("\n---------- REGISTRATION MANAGEMENT ----------\n");
-        printf("19. Manage Registration\n");
-
-        printf("\n---------- REPORTS ----------\n");
-        printf("20. View Reports\n");
-
+        printf("6. Add Advisor\n7. View All Advisors\n8. Search Advisor\n9. Update Advisor\n10. Delete Advisor\n");
+        printf("11. Assign Student to Advisor\n12. View Advisor's Assigned Students\n13. View Advisor Workload\n14. View Unassigned Students\n");
+        printf("\n---------- DEPARTMENT & BATCH ----------\n15. Manage Departments\n16. Manage Batches\n");
+        printf("\n---------- SECTION MANAGEMENT ----------\n17. Manage Sections\n18. Manage Section Requests\n");
+        printf("\n---------- COURSE MANAGEMENT ----------\n19. Manage Courses\n");
+        printf("\n---------- REGISTRATION MANAGEMENT ----------\n20. Manage Registration\n");
+        printf("\n---------- REPORTS ----------\n21. View Reports\n");
         printf("\n0. Logout\n");
-
-        printf("\nEnter your choice: ");
-        scanf("%d", &choice);
+        choice = readInt("\nEnter your choice: ");
 
         switch (choice)
         {
@@ -558,14 +536,18 @@ void adminPanel()
             break;
 
         case 18:
-            manageCourses();
+            manageSectionRequests();
             break;
 
         case 19:
-            manageRegistration();
+            manageCourses();
             break;
 
         case 20:
+            manageRegistration();
+            break;
+
+        case 21:
             viewReports();
             break;
 
@@ -574,76 +556,44 @@ void adminPanel()
             return;
 
         default:
-            printf("\nInvalid choice! Please try again.\n");
+            printError("Invalid choice! Please try again.");
         }
     }
 }
 
 void addStudent()
 {
-    printf("\n--- Add New Student ---\n\n");
-
     char newStudentID[21];
-
-    printf("Enter Student ID: ");
-    scanf("%20s", newStudentID);
-
-    Student *temp = studentHead;
-    while (temp != NULL)
-    {
-        if (!strcmp(temp->studentID, newStudentID))
-        {
-            printf("\nError! This Student ID already exists.\n");
-            return;
-        }
-        temp = temp->nxt;
-    }
-
-    Student *newStudent = malloc(sizeof(Student));
-
-    if (newStudent == NULL)
-    {
-        printf("\nMemory allocation failed!\n");
-        return;
-    }
-
+    Student *temp;
+    Student *newStudent;
+    printf("\n--- Add New Student ---\n\n");
+    readToken("Enter Student ID: ", newStudentID, 20);
+    if (studentExists(newStudentID)) { printError("This Student ID already exists."); return; }
+    newStudent = malloc(sizeof(Student));
+    if (newStudent == NULL) { printError("Memory allocation failed!"); return; }
     strcpy(newStudent->studentID, newStudentID);
-
-    printf("Enter Student Name: ");
-    scanf(" %100[^\n]", newStudent->name);
-    printf("Enter Department: ");
-    scanf("%20s", newStudent->department);
-    printf("Enter Batch: ");
-    scanf("%d", &newStudent->batch);
-    printf("Enter Section: ");
-    scanf("%20s", newStudent->section);
-    printf("Enter Email: ");
-    scanf("%100s", newStudent->email);
-    printf("Enter Phone: ");
-    scanf("%20s", newStudent->phone);
-    // printf("Enter Advisor ID: ");
-    // scanf("%50s", newStudent->advisorID);
-    strcpy(newStudent->advisorID, ""); // Initialize advisor ID as empty because it will be assigned later with assignStudentToAdvisor();
-    printf("Enter Password: ");
-    scanf("%100s", newStudent->password);
-
+    readLine("Enter Student Name: ", newStudent->name, sizeof(newStudent->name));
+    readToken("Enter Department: ", newStudent->department, 20);
+    if (findDepartment(newStudent->department) == NULL) { printError("Department not found. Add department first."); free(newStudent); return; }
+    newStudent->batch = readInt("Enter Batch: ");
+    if (findBatch(newStudent->department, newStudent->batch) == NULL) { printError("Batch not found for department."); free(newStudent); return; }
+    readToken("Enter Section (or - for none): ", newStudent->section, 20);
+    if (strcmp(newStudent->section, "-") == 0) newStudent->section[0] = '\0';
+    if (newStudent->section[0] != '\0')
+    {
+        Section *sec = findSection(newStudent->department, newStudent->batch, newStudent->section);
+        if (sec == NULL) { printError("Section not found for department/batch."); free(newStudent); return; }
+        if (countStudentsInSection(newStudent->department, newStudent->batch, newStudent->section) >= sec->capacity)
+        { printError("Section is full."); free(newStudent); return; }
+    }
+    readToken("Enter Email: ", newStudent->email, 100);
+    readToken("Enter Phone: ", newStudent->phone, 20);
+    newStudent->advisorID[0] = '\0';
+    readToken("Enter Password: ", newStudent->password, 100);
     newStudent->nxt = NULL;
-
-    if (studentHead == NULL)
-    {
-        studentHead = newStudent;
-    }
-    else
-    {
-        temp = studentHead;
-        while (temp->nxt != NULL)
-        {
-            temp = temp->nxt;
-        }
-        temp->nxt = newStudent;
-    }
-
-    printf("\n[SUCCESS] Student added successfully!\n");
+    if (studentHead == NULL) studentHead = newStudent;
+    else { temp = studentHead; while (temp->nxt != NULL) temp = temp->nxt; temp->nxt = newStudent; }
+    printSuccess("Student added successfully!");
     saveStudents();
 }
 
@@ -658,8 +608,7 @@ void updateStudent()
     }
 
     char searchID[21];
-    printf("Enter Student ID: ");
-    scanf("%20s", searchID);
+    readToken("Enter Student ID: ", searchID, 20);
 
     Student *temp = studentHead;
     while (temp != NULL)
@@ -696,44 +645,57 @@ void updateStudent()
         // printf("7. Update Advisor ID\n");
         printf("0. Finish Updating\n");
 
-        printf("\nEnter your choice: ");
-        scanf("%d", &choice);
+        choice = readInt("\nEnter your choice: ");
 
         switch (choice)
         {
         case 1:
-            printf("Enter New Name: ");
-            scanf(" %100[^\n]", temp->name);
+            readLine("Enter New Name: ", temp->name, sizeof(temp->name));
             printf("\n[SUCCESS] Name updated successfully!\n");
             break;
 
         case 2:
-            printf("Enter New Department: ");
-            scanf("%20s", temp->department);
-            printf("\n[SUCCESS] Department updated successfully!\n");
+        {
+            char dept[21];
+            readToken("Enter New Department: ", dept, 20);
+            if (findDepartment(dept) == NULL) { printError("Department not found."); break; }
+            strcpy(temp->department, dept);
+            temp->section[0] = '\0';
+            temp->advisorID[0] = '\0';
+            printSuccess("Department updated. Section/advisor cleared; reassign as needed.");
             break;
-
+        }
         case 3:
-            printf("Enter New Batch: ");
-            scanf("%d", &temp->batch);
-            printf("\n[SUCCESS] Batch updated successfully!\n");
+        {
+            int batch = readInt("Enter New Batch: ");
+            if (findBatch(temp->department, batch) == NULL) { printError("Batch not found for department."); break; }
+            temp->batch = batch;
+            temp->section[0] = '\0';
+            printSuccess("Batch updated. Section cleared; reassign as needed.");
             break;
-
+        }
         case 4:
-            printf("Enter New Section: ");
-            scanf("%20s", temp->section);
-            printf("\n[SUCCESS] Section updated successfully!\n");
+        {
+            char secName[21];
+            readToken("Enter New Section (- to clear): ", secName, 20);
+            if (strcmp(secName, "-") == 0) { temp->section[0] = '\0'; printSuccess("Section cleared."); break; }
+            {
+                Section *sec = findSection(temp->department, temp->batch, secName);
+                if (sec == NULL) { printError("Section not found for department/batch."); break; }
+                if (countStudentsInSection(temp->department, temp->batch, secName) >= sec->capacity) { printError("Section is full."); break; }
+                strcpy(temp->section, secName);
+            }
+            printSuccess("Section updated successfully!");
             break;
+        }
 
         case 5:
-            printf("Enter New Email: ");
-            scanf("%100s", temp->email);
+            readToken("Enter New Email: ", temp->email, 100);
             printf("\n[SUCCESS] Email updated successfully!\n");
             break;
 
         case 6:
-            printf("Enter New Phone: ");
-            scanf("%20s", temp->phone);
+            readToken("Enter New Phone: ", temp->phone, 20);
             printf("\n[SUCCESS] Phone updated successfully!\n");
             break;
 
@@ -767,8 +729,7 @@ void deleteStudent()
     }
 
     char searchID[21];
-    printf("\nEnter Student ID: ");
-    scanf("%20s", searchID);
+    readToken("\nEnter Student ID: ", searchID, 20);
 
     Student *temp = studentHead;
     Student *prev = NULL;
@@ -792,23 +753,57 @@ void deleteStudent()
     printf("\n--- Student Information ---\n");
     displayStudentDetails(temp);
 
-    char confirm;
-    printf("\nAre you sure you want to delete this student? (Y/N): ");
-    scanf(" %c", &confirm);
-
-    if (confirm == 'Y' || confirm == 'y')
+    if (confirmYesNo("\nAre you sure you want to delete this student? (Y/N): "))
     {
-        if (prev == NULL)
+        Registration *r = registrationHead, *rp = NULL, *rn;
+        while (r != NULL)
         {
-            studentHead = temp->nxt;
+            rn = r->nxt;
+            if (strcmp(r->studentID, searchID) == 0)
+            {
+                char code[21];
+                int wasRegistered = (strcmp(r->status, "REGISTERED") == 0);
+                strcpy(code, r->courseCode);
+                if (strcmp(r->status, "WAITING") == 0)
+                {
+                    WaitQueue *q = waitQueueHead;
+                    while (q != NULL) { if (strcmp(q->courseCode, r->courseCode)==0){ WaitNode *wn=q->front,*wp=NULL; while(wn){ if(strcmp(wn->studentID,searchID)==0){ if(wp) wp->nxt=wn->nxt; else q->front=wn->nxt; if(q->rear==wn) q->rear=wp; free(wn); break;} wp=wn; wn=wn->nxt;} break;} q=q->nxt; }
+                }
+                if (rp != NULL) rp->nxt = rn; else registrationHead = rn;
+                free(r);
+                if (wasRegistered)
+                {
+                    char nextID[21];
+                    if (dequeueWait(code, nextID))
+                    {
+                        Registration *wr = registrationHead;
+                        while (wr != NULL)
+                        {
+                            if (strcmp(wr->studentID,nextID)==0 && strcmp(wr->courseCode,code)==0 && strcmp(wr->status,"WAITING")==0)
+                            { strcpy(wr->status,"REGISTERED"); pushHistory(nextID,"PROMOTED",code); break; }
+                            wr = wr->nxt;
+                        }
+                    }
+                }
+            }
+            else rp = r;
+            r = rn;
         }
-        else
+        saveHistory();
         {
-            prev->nxt = temp->nxt;
+            SectionRequest *sr = sectionRequestHead, *sp = NULL, *sn;
+            while (sr != NULL)
+            {
+                sn = sr->nxt;
+                if (strcmp(sr->studentID, searchID) == 0) { if (sp) sp->nxt = sn; else sectionRequestHead = sn; free(sr); }
+                else sp = sr;
+                sr = sn;
+            }
         }
-
+        saveRegistrations(); saveWaitlists(); saveSectionRequests();
+        if (prev == NULL) studentHead = temp->nxt; else prev->nxt = temp->nxt;
         free(temp);
-        printf("\n[SUCCESS] Student deleted successfully!\n");
+        printSuccess("Student deleted successfully!");
         saveStudents();
     }
     else
@@ -856,7 +851,7 @@ void addAdvisor()
     char newAdvisorID[51];
 
     printf("Enter Advisor ID: ");
-    scanf("%50s", newAdvisorID);
+    readToken("Enter Advisor ID: ", newAdvisorID, 50);
 
     Advisor *temp = advisorHead;
     while (temp != NULL)
@@ -880,15 +875,15 @@ void addAdvisor()
     strcpy(newAdvisor->advisorID, newAdvisorID);
 
     printf("Enter Advisor Name: ");
-    scanf(" %100[^\n]", newAdvisor->name);
+    readLine("Enter Advisor Name: ", newAdvisor->name, sizeof(newAdvisor->name));
     printf("Enter Department: ");
-    scanf("%20s", newAdvisor->department);
+    readToken("Enter Department: ", newAdvisor->department, 20);
     printf("Enter Email: ");
-    scanf("%100s", newAdvisor->email);
+    readToken("Enter Email: ", newAdvisor->email, 100);
     printf("Enter Phone: ");
-    scanf("%20s", newAdvisor->phone);
+    readToken("Enter Phone: ", newAdvisor->phone, 20);
     printf("Enter Password: ");
-    scanf("%100s", newAdvisor->password);
+    readToken("Enter Password: ", newAdvisor->password, 100);
 
     newAdvisor->nxt = NULL;
 
@@ -944,8 +939,7 @@ void searchAdvisor()
     }
 
     char searchID[51];
-    printf("Enter Advisor ID: ");
-    scanf("%50s", searchID);
+    readToken("Enter Advisor ID: ", searchID, 50);
 
     Advisor *temp = advisorHead;
     while (temp != NULL)
@@ -973,8 +967,7 @@ void updateAdvisor()
     }
 
     char searchID[51];
-    printf("Enter Advisor ID: ");
-    scanf("%50s", searchID);
+    readToken("Enter Advisor ID: ", searchID, 50);
 
     Advisor *temp = advisorHead;
     while (temp != NULL)
@@ -1007,38 +1000,32 @@ void updateAdvisor()
         printf("5. Update Password\n");
         printf("0. Finish Updating\n");
 
-        printf("\nEnter your choice: ");
-        scanf("%d", &choice);
+        choice = readInt("\nEnter your choice: ");
 
         switch (choice)
         {
         case 1:
-            printf("Enter New Name: ");
-            scanf(" %100[^\n]", temp->name);
+            readLine("Enter New Name: ", temp->name, sizeof(temp->name));
             printf("\n[SUCCESS] Name updated successfully!\n");
             break;
 
         case 2:
-            printf("Enter New Department: ");
-            scanf("%20s", temp->department);
+            readToken("Enter New Department: ", temp->department, 20);
             printf("\n[SUCCESS] Department updated successfully!\n");
             break;
 
         case 3:
-            printf("Enter New Email: ");
-            scanf("%100s", temp->email);
+            readToken("Enter New Email: ", temp->email, 100);
             printf("\n[SUCCESS] Email updated successfully!\n");
             break;
 
         case 4:
-            printf("Enter New Phone: ");
-            scanf("%20s", temp->phone);
+            readToken("Enter New Phone: ", temp->phone, 20);
             printf("\n[SUCCESS] Phone updated successfully!\n");
             break;
 
         case 5:
-            printf("Enter New Password: ");
-            scanf("%100s", temp->password);
+            readToken("Enter New Password: ", temp->password, 100);
             printf("\n[SUCCESS] Password updated successfully!\n");
             break;
 
@@ -1066,8 +1053,7 @@ void deleteAdvisor()
     }
 
     char searchID[51];
-    printf("Enter Advisor ID: ");
-    scanf("%50s", searchID);
+    readToken("Enter Advisor ID: ", searchID, 50);
 
     Advisor *temp = advisorHead;
     Advisor *prev = NULL;
@@ -1103,23 +1089,18 @@ void deleteAdvisor()
         studentTemp = studentTemp->nxt;
     }
 
-    char confirm;
-    printf("\nAre you sure you want to delete this advisor? (Y/N): ");
-    scanf(" %c", &confirm);
-
-    if (confirm == 'Y' || confirm == 'y')
+    if (confirmYesNo("\nAre you sure you want to delete this advisor? (Y/N): "))
     {
-        if (prev == NULL)
+        Student *st = studentHead;
+        while (st != NULL)
         {
-            advisorHead = temp->nxt;
+            if (strcmp(st->advisorID, searchID) == 0) st->advisorID[0] = '\0';
+            st = st->nxt;
         }
-        else
-        {
-            prev->nxt = temp->nxt;
-        }
-
+        saveStudents();
+        if (prev == NULL) advisorHead = temp->nxt; else prev->nxt = temp->nxt;
         free(temp);
-        printf("\n[SUCCESS] Advisor deleted successfully!\n");
+        printSuccess("Advisor deleted successfully!");
         saveAdvisors();
     }
     else
@@ -1176,7 +1157,7 @@ void assignStudentToAdvisor()
     char searchStudentID[21];
     char searchAdvisorID[51];
     printf("\nEnter Student ID: ");
-    scanf("%20s", searchStudentID);
+    readToken("Enter Student ID: ", searchStudentID, 20);
 
     Student *studentTemp = studentHead;
     while (studentTemp != NULL)
@@ -1196,7 +1177,7 @@ void assignStudentToAdvisor()
     displayStudentDetails(studentTemp);
 
     printf("\nEnter Advisor ID: ");
-    scanf("%50s", searchAdvisorID);
+    readToken("Enter Advisor ID: ", searchAdvisorID, 50);
 
     Advisor *advisorTemp = advisorHead;
     while (advisorTemp != NULL)
@@ -1227,13 +1208,9 @@ void assignStudentToAdvisor()
         printf("\n[INFO] This student already has an assigned advisor.\n");
         printf("Current Advisor ID: %s\n", studentTemp->advisorID);
 
-        char confirm;
-        printf("\nDo you want to change the assigned advisor? (Y/N): ");
-        scanf(" %c", &confirm);
-
-        if (confirm != 'Y' && confirm != 'y')
+        if (!confirmYesNo("\nDo you want to change the assigned advisor? (Y/N): "))
         {
-            printf("\n[INFO] Advisor reassignment cancelled.\n");
+            printInfo("Advisor reassignment cancelled.");
             return;
         }
     }
@@ -1258,7 +1235,7 @@ void viewAdvisorStudents()
 
     char searchID[51];
     printf("\nEnter Advisor ID: ");
-    scanf("%50s", searchID);
+    readToken("Enter Advisor ID: ", searchID, 50);
 
     Advisor *advisorTemp = advisorHead;
     while (advisorTemp != NULL)
@@ -1415,8 +1392,7 @@ void advisorPanel(char advisorID[])
         printf("4. View Student Registration\n");
         printf("0. Logout\n");
 
-        printf("\nEnter your choice: ");
-        scanf("%d", &choice);
+        choice = readInt("\nEnter your choice: ");
 
         switch (choice)
         {
@@ -1449,7 +1425,7 @@ void advisorPanel(char advisorID[])
             char searchID[21];
             printf("\n--- Search Assigned Student ---\n");
             printf("Enter Student ID: ");
-            scanf("%20s", searchID);
+            readToken("Enter ID: ", searchID, 20);
 
             Student *studentTemp = studentHead;
             int found = 0;
@@ -1477,7 +1453,7 @@ void advisorPanel(char advisorID[])
         }
 
         case 4:
-            viewStudentRegistrationForAdvisor();
+            viewStudentRegistrationForAdvisor(advisorID);
             break;
 
         case 0:
@@ -1578,8 +1554,7 @@ void studentPanel(char studentID[])
 
         printf("\n0. Logout\n");
 
-        printf("\nEnter your choice: ");
-        scanf("%d", &choice);
+        choice = readInt("\nEnter your choice: ");
 
         switch (choice)
         {
@@ -1706,7 +1681,7 @@ void studentPanel(char studentID[])
 }
 
 
-Student *findStudentByID(const char studentID[])
+Student *findStudentByID(const char *studentID)
 {
     Student *temp = studentHead;
     while (temp != NULL)
@@ -1720,7 +1695,7 @@ Student *findStudentByID(const char studentID[])
     return NULL;
 }
 
-Advisor *findAdvisorByID(const char advisorID[])
+Advisor *findAdvisorByID(const char *advisorID)
 {
     Advisor *temp = advisorHead;
     while (temp != NULL)
@@ -1732,6 +1707,16 @@ Advisor *findAdvisorByID(const char advisorID[])
         temp = temp->nxt;
     }
     return NULL;
+}
+
+int studentExists(const char *studentID)
+{
+    return findStudentByID(studentID) != NULL;
+}
+
+int advisorExists(const char *advisorID)
+{
+    return findAdvisorByID(advisorID) != NULL;
 }
 
 // COMMON FUNCTIONS (Admin & Advisor)
@@ -1769,7 +1754,7 @@ void searchStudent()
 
     char searchID[21];
     printf("Enter Student ID: ");
-    scanf("%20s", searchID);
+    readToken("Enter ID: ", searchID, 20);
 
     Student *temp = studentHead;
     while (temp != NULL)

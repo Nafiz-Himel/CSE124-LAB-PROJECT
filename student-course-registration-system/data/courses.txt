@@ -1,0 +1,3 @@
+CSE101|Intro to Programming|CSE|3|2
+CSE102|Data Structures|CSE|3|2
+EEE101|Basic Electrical|EEE|3|2

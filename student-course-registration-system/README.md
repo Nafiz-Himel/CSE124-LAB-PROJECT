@@ -1,63 +1,42 @@
 # Student Course Registration System
 
-CSE124 - Data Structure Lab project: a console-based course registration system in C.
+CSE124 - Data Structure Lab project: a console-based Student Course Registration System in C.
 
-## Data Structures Used
+## Implemented Modules
+- Role-based login (Admin/Student/Advisor)
+- Department / Batch / Section management (LL, TXT persistence)
+- Course & prerequisite management (LL, dependency guards)
+- Registration, waitlist, and history (LL + Queue FIFO + Stack LIFO)
+- Section request workflow (submit, approve/reject/alternative, change request)
+- Reports and export (`reports/last_report.txt`, named export)
 
-| Module | Data Structure | Purpose |
-|---|---|---|
-| Admin/Student/Advisor records | Singly Linked List | Dynamic in-memory record management |
-| Departments/Batches/Sections/Courses/Prerequisites | Singly Linked List | Catalog and organization data |
-| Course Registration | Singly Linked List | Registration records and status tracking |
-| Waitlist | Queue (FIFO) | Fair course waitlist processing |
-| Registration History | Stack (LIFO) | Recent action/history tracking |
+## Data Structures
+- **Singly Linked List**: admins, students, advisors, departments, batches, sections, courses, prerequisites, registrations, section requests
+- **Queue (FIFO)**: per-course waitlist
+- **Stack (LIFO)**: registration/section action history
 
-## Folder Structure
+No Hash Table, BST, or Directed Graph used.
 
-```text
-student-course-registration-system/
-├── .gitignore
-├── Makefile
-├── README.md
-├── bin/                    # Compiled executable output
-├── build/                  # Build artifacts (optional)
-├── data/                   # Persistent text data files
-├── docs/                   # Documentation/proposal
-├── include/                # Header files
-├── reports/                # Generated report exports
-└── src/                    # C source files
-```
-
-## Build
-
+## Build & Run
 ```powershell
-gcc -Wall -Wextra -Iinclude src/main.c src/reports.c src/dept_batch_section.c src/course.c src/registration.c -o bin/app.exe
+gcc -Wall -Wextra -Iinclude src/main.c src/utils.c src/reports.c src/dept_batch_section.c src/course.c src/registration.c src/section.c -o bin/app.exe
+.inpp.exe
 ```
-
-Or with Make (if available):
-
+Or:
 ```powershell
 make
+.inpp.exe
 ```
-
-## Run
-
-```powershell
-.\bin\app.exe
-```
-
-Run from the `student-course-registration-system` directory so relative `data/` and `reports/` paths resolve correctly.
+Run from `student-course-registration-system` so relative `data/` and `reports/` paths resolve.
 
 ## Data Files
+- `data/admins.txt`, `data/students.txt`, `data/advisors.txt`
+- `data/departments.txt`, `data/batches.txt`, `data/sections.txt`
+- `data/courses.txt`, `data/prerequisites.txt`
+- `data/registrations.txt`, `data/waitlists.txt`, `data/history.txt`
+- `data/section_requests.txt`
 
-- `data/admins.txt`
-- `data/advisors.txt`
-- `data/students.txt`
-- `data/departments.txt`
-- `data/batches.txt`
-- `data/sections.txt`
-- `data/courses.txt`
-- `data/prerequisites.txt`
-- `data/registrations.txt`
-- `data/waitlists.txt`
-- `data/history.txt`
+## Notes
+- Input uses validated helpers in `src/utils.c`.
+- Mutating operations save to TXT files.
+- Runtime executable launch may be blocked on systems with Device Guard policy; compilation is supported via GCC.

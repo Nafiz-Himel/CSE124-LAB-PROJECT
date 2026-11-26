@@ -47,14 +47,7 @@ void freeWaitlists();
 void freeHistory();
 
 void manageRegistration();
-void viewStudentRegistrationForAdvisor();
-
-void viewAvailableSectionsForStudent(const char *studentID);
-void submitSectionPreferences(const char *studentID);
-void viewSectionRequestStatus(const char *studentID);
-void respondToAlternativeSection(const char *studentID);
-void requestSectionChange(const char *studentID);
-void viewSectionChangeStatus(const char *studentID);
+void viewStudentRegistrationForAdvisor(const char *advisorID);
 
 void registerCourseForStudent(const char *studentID);
 void dropCourseForStudent(const char *studentID);
@@ -67,5 +60,7 @@ int countRegisteredCredits(const char *studentID);
 int countCourseRegistrations(const char *courseCode);
 int isStudentRegistered(const char *studentID, const char *courseCode);
 void pushHistory(const char *studentID, const char *action, const char *courseCode);
+void enqueueWait(const char *courseCode, const char *studentID);
+int dequeueWait(const char *courseCode, char *studentIDOut);
 
 #endif

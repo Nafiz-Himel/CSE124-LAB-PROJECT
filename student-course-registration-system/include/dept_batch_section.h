@@ -46,5 +46,8 @@ Department *findDepartment(const char *code);
 Batch *findBatch(const char *dept, int year);
 Section *findSection(const char *dept, int year, const char *sectionName);
 int countStudentsInSection(const char *dept, int year, const char *sectionName);
+int hasDependentBatch(const char *dept);
+int hasDependentSection(const char *dept, int year);
+int hasDependentCourse(const char *dept);
 
 #endif

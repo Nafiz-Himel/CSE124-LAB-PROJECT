@@ -49,5 +49,9 @@ extern Advisor *advisorHead;
 
 void saveStudents();
 void saveAdvisors();
+Student *findStudentByID(const char *studentID);
+Advisor *findAdvisorByID(const char *advisorID);
+int studentExists(const char *studentID);
+int advisorExists(const char *advisorID);
 
 #endif

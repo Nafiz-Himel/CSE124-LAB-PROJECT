@@ -37,5 +37,6 @@ void viewCoursePrerequisites();
 Course *findCourse(const char *code);
 int prereqExists(const char *courseCode, const char *prereqCode);
 int hasPrerequisitesSatisfied(const char *studentID, const char *courseCode);
+int countCourseWaitlist(const char *courseCode);
 
 #endif
